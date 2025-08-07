@@ -47,14 +47,14 @@
             color: #0C4F4E;
             margin-bottom: 20px;
             font-weight: 100;
-            font-size: 3em;
+            font-size: 150px;
         }
 
         .instructions {
             color: #1f1d1d;
             margin-bottom: 20px;
             font-size: 14px;
-            font-weight: 300;
+            font-weight: 600;
         }
 
         .grid-container {
@@ -438,9 +438,6 @@
 <body>
     <div class="game-container">
         <h1>deduct</h1>
-        <div class="instructions">
-            Select boxes to delete the numbers. Click once to confirm a cell should stay and twice to delete. <br/> Make each row and column sum to the target values!
-        </div>
       
       <div class="timer" id="gameTimer">00:00</div>
       <div class="puzzle-info" id="puzzleInfo">Loading puzzle...</div>
@@ -471,6 +468,10 @@
                 <h3>Column Targets</h3>
                 <div class="col-targets" id="colTargets"></div>
             </div>
+        </div>
+      
+       <div class="instructions">
+            Select boxes to delete the numbers. Click once to delete and twice to take a note the cell must stay on the grid. Make each row and column sum to the target values!
         </div>
         
         <div class="controls">
@@ -966,18 +967,19 @@
             if (!gameState.startTime) {
                 startTimer();
             }
+         
           
             // Cycle through three states: normal -> confirmed -> deleted -> normal
             if (!gameState.confirmed[row][col] && !gameState.deleted[row][col]) {
                 // Normal -> Confirmed
-                gameState.confirmed[row][col] = true;
-            } else if (gameState.confirmed[row][col]) {
-                // Confirmed -> Deleted
-                gameState.confirmed[row][col] = false;
                 gameState.deleted[row][col] = true;
+            } else if (gameState.deleted[row][col]) {
+                // Confirmed -> Deleted
+                gameState.deleted[row][col] = false;
+                gameState.confirmed[row][col] = true;
             } else {
                 // Deleted -> Normal
-                gameState.deleted[row][col] = false;
+                gameState.confirmed[row][col] = false;
             }
             
             renderGrid();
@@ -1028,7 +1030,6 @@
                 stopTimer();
               
             } else {
-                status.textContent = 'Keep going! Delete numbers to match the targets.';
                 status.className = 'status';
                 timer.classList.remove('completed');
             }
