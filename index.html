@@ -7,6 +7,17 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
         
+            :root {
+        --bg: #FDF9F5;
+        --primary: #0C4F4E;
+        --secondary: #9D442A;
+        --accent: #9EB5A3;
+        --light: #FFF6EB;
+        --text-dark: #1F1D1D;
+        --text-light: #FFF6EB;
+        --border: #D7C2B0;
+          }
+      
         * {
             box-sizing: border-box;
         }
@@ -36,7 +47,7 @@
             color: #0C4F4E;
             margin-bottom: 20px;
             font-weight: 100;
-            font-size: 2em;
+            font-size: 3em;
         }
 
         .instructions {
@@ -69,7 +80,7 @@
             grid-template-rows: repeat(7, 50px);
             gap: 1px;
             background-color: black;
-            outline: 3px solid black;
+            outline: 1px solid black;
             outline-offset: -1px;
         }
 
@@ -88,19 +99,18 @@
         }
 
         .cell:hover {
-            background-color: #FFF6EB;
+            background-color: #E9ECEF;
         }
 
         .cell.deleted {
-            background-color: #9D442A;
-            color: #FFF6EB;
+            background-color: #E9ECEF;
+            color: #495057;
+            border: 1px white;
         }
       
        .cell.confirmed {
-            background-color: #9EB5A3;
-            color: #0C4F4E;
-            font-weight: 700;
-            border: 2px solid #0C4F4E;
+            background-color: #c5decb;
+            border: 1px white;
             box-sizing: border-box;
         }
 
@@ -154,11 +164,13 @@
                 padding: 8px 15px;
                 font-size: 14px;
                 margin: 0 5px;
+                background-color: #BC804D;
             }
             
             .difficulty-btn {
                 padding: 6px 12px;
                 font-size: 12px;
+                background-color: #BC804D;
             }
             
             .timer {
@@ -312,9 +324,16 @@
             color: #FFF6EB;
         }
 
-        .target.complete, .row-target.complete, .col-target.complete, .row-current.complete, .col-current.complete {
+        .target.complete, .row-target.complete, .col-target.complete {
             background-color: #0C4F4E !important;
             color: #FFF6EB !important;
+            border-radius: 6px;
+            box-shadow:0px 0px 0px 3px white inset;
+        }
+      
+        .row-current.complete, .col-current.complete {
+            background-color: white !important;
+            color: white !important;
         }
 
         .controls {
@@ -354,26 +373,25 @@
             padding: 8px 16px;
             font-size: 14px;
             font-family: 'Source Sans Pro', sans-serif;
-            font-weight: 400;
-            border: 2px solid #0C4F4E;
+            font-weight: 300;
             border-radius: 6px;
-            background-color: white;
-            color: #0C4F4E;
+            background-color: #BC804D;
+            color: white;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .difficulty-btn:hover {
-            background-color: #FFF6EB;
+            background-color: #9D442A;
         }
 
         .difficulty-btn.active {
-            background-color: #0C4F4E;
-            color: #FFF6EB;
+            background-color: #9D442A;
+            color: white;
         }
 
         .difficulty-label {
-            font-size: 14px;
+            font-size: 24px;
             color: #1f1d1d;
             font-weight: 600;
             margin-bottom: 8px;
@@ -391,11 +409,10 @@
             margin: 15px 0;
             font-size: 18px;
             font-weight: 600;
-            color: #0C4F4E;
+            color: black;
             background-color: white;
             padding: 8px 16px;
             border-radius: 8px;
-            border: 2px solid #D7C2B0;
             display: inline-block;
             min-width: 80px;
         }
@@ -413,7 +430,7 @@
         .puzzle-info {
             margin-bottom: 10px;
             font-size: 12px;
-            color: #0C4F4E;
+            color: white;
             font-style: italic;
         }
     </style>
