@@ -70,4 +70,61 @@ class DeductGame {
         }
 
         // Toggle cell state
-        this.gameState.toggleCell(row
+        this.gameState.toggleCell(row, col);
+        
+        // Re-render the grid
+        this.renderer.renderGrid();
+        
+        // Check for win condition
+        if (this.gameState.checkWin()) {
+            this.handleWin();
+        } else {
+            this.renderer.updateStatus();
+        }
+    }
+
+    handleWin() {
+        this.gameState.gameCompleted = true;
+        this.timer.stop();
+        this.renderer.showWinStatus();
+        this.renderer.animateWin();
+    }
+
+    resetPuzzle() {
+        this.timer.stop();
+        this.timer.reset();
+        this.gameState.reset();
+        this.renderer.renderGrid();
+        this.renderer.updateStatus();
+        this.renderer.updateTimerDisplay();
+    }
+
+    newPuzzle() {
+        console.log("Generating new puzzle...");
+        this.timer.stop();
+        this.timer.reset();
+        
+        // Generate a new puzzle with current difficulty
+        const generator = new PuzzleGenerator(7, this.gameState.difficulty);
+        const newPuzzle = generator.generate();
+        
+        // Initialize game with new puzzle
+        this.gameState.initializeWithPuzzle(newPuzzle);
+        
+        // Update UI
+        this.renderer.updatePuzzleInfo();
+        this.renderer.renderGrid();
+        this.renderer.updateStatus();
+        this.renderer.updateTimerDisplay();
+    }
+
+    toggleGuides(showGuides) {
+        this.gameState.showGuides = showGuides;
+        this.renderer.renderGrid();
+    }
+}
+
+// Initialize game when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.game = new DeductGame();
+});
