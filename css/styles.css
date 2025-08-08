@@ -1,0 +1,488 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+
+/* ==================== */
+/* Root Variables/Theme */
+/* ==================== */
+:root {
+    --bg: #FDF9F5;
+    --primary: #0C4F4E;
+    --secondary: #9D442A;
+    --accent: #9EB5A3;
+    --light: #FFF6EB;
+    --text-dark: #1F1D1D;
+    --text-light: #FFF6EB;
+    --border: #D7C2B0;
+}
+
+/* ==================== */
+/* Base Styles          */
+/* ==================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: white;
+    padding: 10px;
+}
+
+.game-container {
+    text-align: center;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 100%;
+}
+
+h1 {
+    color: var(--primary);
+    margin-bottom: 20px;
+    font-weight: 100;
+    font-size: 150px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.instructions {
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ==================== */
+/* Grid Layout          */
+/* ==================== */
+.grid-container {
+    display: inline-block;
+    position: relative;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.grid-wrapper {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 50px) 60px;
+    grid-template-rows: 40px repeat(7, 50px) 40px;
+    gap: 0;
+    background-color: white;
+}
+
+.grid {
+    grid-column: 2 / 9;
+    grid-row: 2 / 9;
+    display: grid;
+    grid-template-columns: repeat(7, 50px);
+    grid-template-rows: repeat(7, 50px);
+    gap: 1px;
+    background-color: black;
+    outline: 1px solid black;
+    outline-offset: -1px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ==================== */
+/* Cell States          */
+/* ==================== */
+.cell {
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    color: var(--text-dark);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.cell:hover {
+    background-color: #F5F5F5;
+}
+
+.cell.deleted {
+    background-color: #E9ECEF;
+    color: #495057;
+    border: 1px white;
+}
+
+.cell.confirmed {
+    background-color: #c5decb;
+    border: 1px white;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(127, 166, 136, 0.3);
+}
+
+.cell.confirmed:hover {
+    background-color: #8AA690;
+}
+
+/* ==================== */
+/* Target Cells         */
+/* ==================== */
+.row-target {
+    grid-column: 1;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.row-target.over-target {
+    color: var(--secondary);
+    font-weight: 700;
+}
+
+.col-target {
+    grid-row: 1;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.col-target.over-target {
+    color: var(--secondary);
+    font-weight: 700;
+}
+
+.row-current {
+    grid-column: 9;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-dark);
+}
+
+.col-current {
+    grid-row: 9;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-dark);
+}
+
+.target.complete, 
+.row-target.complete, 
+.col-target.complete {
+    background-color: var(--primary) !important;
+    color: var(--light) !important;
+    border-radius: 6px;
+    box-shadow: 0px 0px 0px 3px white inset;
+}
+
+.row-current.complete, 
+.col-current.complete {
+    background-color: white !important;
+    color: white !important;
+}
+
+/* ==================== */
+/* Controls & Buttons   */
+/* ==================== */
+.controls {
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 300;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary);
+    color: var(--light);
+    cursor: pointer;
+    margin: 0 10px;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.difficulty-container {
+    margin: 15px 0;
+}
+
+.difficulty-buttons {
+    display: inline-flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.difficulty-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 300;
+    border-radius: 5px;
+    background-color: #BC804D;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.difficulty-btn:hover {
+    background-color: var(--secondary);
+}
+
+.difficulty-btn.active {
+    background-color: var(--secondary);
+    color: white;
+}
+
+.difficulty-label {
+    font-size: 24px;
+    color: var(--text-dark);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* ==================== */
+/* Timer & Status       */
+/* ==================== */
+.timer {
+    margin: 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: black;
+    background-color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.timer.completed {
+    background-color: var(--secondary);
+    color: var(--light);
+    border-color: var(--secondary);
+}
+
+.status {
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    min-height: 25px;
+    color: var(--text-dark);
+}
+
+.status.win {
+    color: var(--primary);
+    font-size: 24px;
+    animation: winPulse 1s ease-in-out;
+}
+
+.puzzle-info {
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: white;
+    font-style: italic;
+}
+
+/* ==================== */
+/* Toggle Switch        */
+/* ==================== */
+.guides-toggle {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 4px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 2px;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--primary);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.toggle-label {
+    font-size: 14px;
+    color: var(--text-dark);
+    font-weight: 400;
+}
+
+/* ==================== */
+/* Animations           */
+/* ==================== */
+@keyframes winPulse {
+    0%, 100% { 
+        background-color: var(--success);
+        transform: scale(1);
+    }
+    50% { 
+        background-color: #6BC76F;
+        transform: scale(1.1);
+    }
+}
+
+.cell.win-animation {
+    animation: winPulse 0.6s ease-in-out;
+}
+
+/* ==================== */
+/* Mobile Responsive    */
+/* ==================== */
+@media (max-width: 600px) {
+    .game-container {
+        padding: 15px;
+        border-radius: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+    
+    .instructions {
+        font-size: 12px;
+        margin-bottom: 15px;
+        padding: 0 10px;
+    }
+    
+    .grid-wrapper {
+        grid-template-columns: 40px repeat(7, 38px) 40px;
+        grid-template-rows: 30px repeat(7, 38px) 30px;
+        margin: 0 auto;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(7, 38px);
+        grid-template-rows: repeat(7, 38px);
+        outline: 2px solid black;
+    }
+    
+    .cell {
+        font-size: 14px;
+    }
+    
+    .row-target, .col-target {
+        font-size: 12px;
+    }
+    
+    .row-current, .col-current {
+        font-size: 11px;
+    }
+    
+    button {
+        padding: 8px 15px;
+        font-size: 14px;
+        margin: 0 5px;
+        background-color: #BC804D;
+    }
+    
+    .difficulty-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        background-color: #BC804D;
+    }
+    
+    .timer {
+        font-size: 16px;
+        padding: 6px 12px;
+    }
+    
+    .status {
+        font-size: 16px;
+    }
+    
+    .controls {
+        margin-top: 15px;
+    }
+}
+
+/* Extra small mobile screens */
+@media (max-width: 380px) {
+    .grid-wrapper {
+        grid-template-columns: 35px repeat(7, 32px) 35px;
+        grid-template-rows: 28px repeat(7, 32px) 28px;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(7, 32px);
+        grid-template-rows: repeat(7, 32px);
+    }
+    
+    .cell {
+        font-size: 12px;
+    }
+    
+    .row-target, .col-target {
+        font-size: 11px;
+    }
+    
+    .row-current, .col-current {
+        font-size: 10px;
+    }
+    
+    .difficulty-buttons {
+        gap: 5px;
+    }
+    
+    .difficulty-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+}
