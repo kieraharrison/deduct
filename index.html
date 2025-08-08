@@ -47,6 +47,7 @@
             margin-bottom: 20px;
             font-weight: 100;
             font-size: 150px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .instructions {
@@ -81,6 +82,7 @@
             background-color: black;
             outline: 1px solid black;
             outline-offset: -1px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .cell {
@@ -95,10 +97,14 @@
             user-select: none;
             color: #1f1d1d;
             -webkit-tap-highlight-color: transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            color: var(--text-dark);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .cell:hover {
-            background-color: #E9ECEF;
+            background-color: #F5F5F5;
         }
 
         .cell.deleted {
@@ -111,10 +117,27 @@
             background-color: #c5decb;
             border: 1px white;
             box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(127, 166, 136, 0.3);
         }
 
         .cell.confirmed:hover {
             background-color: #8AA690;
+        }
+      
+      
+        @keyframes winPulse {
+            0%, 100% { 
+                background-color: var(--success);
+                transform: scale(1);
+            }
+            50% { 
+                background-color: #6BC76F;
+                transform: scale(1.1);
+            }
+        }
+
+        .cell.win-animation {
+            animation: winPulse 0.6s ease-in-out;
         }
 
         /* Mobile responsive styles */
@@ -243,6 +266,11 @@
             font-size: 14px;
             color: #1f1d1d;
         }
+      
+       .row-target.over-target {
+            color: #9D442A;
+            font-weight: 700;
+        }
 
         .col-target {
             grid-row: 1;
@@ -253,6 +281,11 @@
             font-weight: 600;
             font-size: 14px;
             color: #1f1d1d;
+        }
+      
+       .col-target.over-target {
+            color: #9D442A;
+            font-weight: 700;
         }
 
         .row-current {
@@ -345,7 +378,7 @@
             font-family: 'Source Sans Pro', sans-serif;
             font-weight: 300;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             background-color: #0C4F4E;
             color: #FFF6EB;
             cursor: pointer;
@@ -373,7 +406,7 @@
             font-size: 14px;
             font-family: 'Source Sans Pro', sans-serif;
             font-weight: 300;
-            border-radius: 6px;
+            border-radius: 5px;
             background-color: #BC804D;
             color: white;
             cursor: pointer;
@@ -424,6 +457,8 @@
 
         .status.win {
             color: #0C4F4E;
+            font-size: 24px;
+            animation: winPulse 1s ease-in-out;
         }
 
         .puzzle-info {
@@ -432,6 +467,68 @@
             color: white;
             font-style: italic;
         }
+      
+      .guides-toggle {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-radius: 7px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 7px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 7px;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #9EB5A3;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+            background-color: #0C4F4E;
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            color: #1f1d1d;
+            font-weight: 400;
+        }
+      
+      
     </style>
 </head>
 <body>
@@ -477,6 +574,14 @@
             <button onclick="resetPuzzle()">Reset</button>
             <button onclick="newPuzzle()">New Puzzle</button>
         </div>
+      
+       <div class="guides-toggle">
+          <span class="toggle-label">Show difference guides:</span>
+          <label class="toggle-switch">
+              <input type="checkbox" id="guidesToggle" checked onchange="toggleGuides()">
+              <span class="toggle-slider"></span>
+          </label>
+      </div>
         
         <div class="status" id="gameStatus"></div>
     </div>
@@ -495,7 +600,8 @@
             gameCompleted: false,
             currentPuzzle: null,
             solutionMask: null,
-            difficulty: 'easy' // Add difficulty setting
+            difficulty: 'easy', 
+            showGuides: true
         };
 
         // New puzzle generator class with difficulty support
@@ -872,33 +978,38 @@
                 
                 if (currentSum === targetSum) {
                     colTarget.classList.add('complete');
+                } else if (currentSum < targetSum) {
+                    colTarget.classList.add('over-target');
                 }
                 
                 gridWrapper.appendChild(colTarget);
             }
             
             // Add column currents (bottom) - showing difference from target
-            for (let col = 0; col < 7; col++) {
-                const colCurrent = document.createElement('div');
-                colCurrent.className = 'col-current';
-                colCurrent.style.gridColumn = col + 2;
-                colCurrent.style.gridRow = 9;
-                
-                const currentSum = getCurrentColSum(col);
-                const targetSum = gameState.colTargets[col];
-                const difference = currentSum - targetSum;
-                
-                if (difference === 0) {
-                    colCurrent.textContent = `✓`;
-                    colCurrent.classList.add('complete');
-                } else if (difference > 0) {
-                    colCurrent.textContent = `-${difference}`;
-                } else {
-                    colCurrent.textContent = `+${Math.abs(difference)}`;
+            if (gameState.showGuides) {
+                for (let col = 0; col < 7; col++) {
+                    const colCurrent = document.createElement('div');
+                    colCurrent.className = 'col-current';
+                    colCurrent.style.gridColumn = col + 2;
+                    colCurrent.style.gridRow = 9;
+                    
+                    const currentSum = getCurrentColSum(col);
+                    const targetSum = gameState.colTargets[col];
+                    const difference = currentSum - targetSum;
+                    
+                    if (difference === 0) {
+                        colCurrent.textContent = `✓`;
+                        colCurrent.classList.add('complete');
+                    } else if (difference > 0) {
+                        colCurrent.textContent = `-${difference}`;
+                    } else {
+                        colCurrent.textContent = `+${Math.abs(difference)}`;
+                    }
+                    
+                    gridWrapper.appendChild(colCurrent);
                 }
-                
-                gridWrapper.appendChild(colCurrent);
             }
+     
             
             // Add row targets (left)
             for (let row = 0; row < 7; row++) {
@@ -913,32 +1024,36 @@
                 
                 if (currentSum === targetSum) {
                     rowTarget.classList.add('complete');
+                } else if (currentSum < targetSum) {
+                    rowTarget.classList.add('over-target');
                 }
                 
                 gridWrapper.appendChild(rowTarget);
             }
             
             // Add row currents (right) - showing difference from target
-            for (let row = 0; row < 7; row++) {
-                const rowCurrent = document.createElement('div');
-                rowCurrent.className = 'row-current';
-                rowCurrent.style.gridColumn = 9;
-                rowCurrent.style.gridRow = row + 2;
-                
-                const currentSum = getCurrentRowSum(row);
-                const targetSum = gameState.rowTargets[row];
-                const difference = currentSum - targetSum;
-                
-                if (difference === 0) {
-                    rowCurrent.textContent = `✓`;
-                    rowCurrent.classList.add('complete');
-                } else if (difference > 0) {
-                    rowCurrent.textContent = `-${difference}`;
-                } else {
-                    rowCurrent.textContent = `+${Math.abs(difference)}`;
+            if (gameState.showGuides) {
+                for (let row = 0; row < 7; row++) {
+                    const rowCurrent = document.createElement('div');
+                    rowCurrent.className = 'row-current';
+                    rowCurrent.style.gridColumn = 9;
+                    rowCurrent.style.gridRow = row + 2;
+                    
+                    const currentSum = getCurrentRowSum(row);
+                    const targetSum = gameState.rowTargets[row];
+                    const difference = currentSum - targetSum;
+                    
+                    if (difference === 0) {
+                        rowCurrent.textContent = `✓`;
+                        rowCurrent.classList.add('complete');
+                    } else if (difference > 0) {
+                        rowCurrent.textContent = `-${difference}`;
+                    } else {
+                        rowCurrent.textContent = `+${Math.abs(difference)}`;
+                    }
+                    
+                    gridWrapper.appendChild(rowCurrent);
                 }
-                
-                gridWrapper.appendChild(rowCurrent);
             }
             
             // Add grid cells
@@ -961,6 +1076,11 @@
             }
         }
 
+        function toggleGuides() {
+            gameState.showGuides = document.getElementById('guidesToggle').checked;
+            renderGrid();
+        }
+      
         function toggleCell(row, col) {
             // Start timer on first move if not already started
             if (!gameState.startTime) {
@@ -970,14 +1090,14 @@
           
             // Cycle through three states: normal -> confirmed -> deleted -> normal
             if (!gameState.confirmed[row][col] && !gameState.deleted[row][col]) {
-                // Normal -> Confirmed
+                // Normal -> Deleted
                 gameState.deleted[row][col] = true;
             } else if (gameState.deleted[row][col]) {
-                // Confirmed -> Deleted
+                // Deleted -> Confirmed (keeping the cell)
                 gameState.deleted[row][col] = false;
                 gameState.confirmed[row][col] = true;
             } else {
-                // Deleted -> Normal
+                // Confirmed -> Normal
                 gameState.confirmed[row][col] = false;
             }
             
@@ -1028,10 +1148,24 @@
                 timer.classList.add('completed');
                 stopTimer();
               
+                animateWin();
+              
             } else {
                 status.className = 'status';
                 timer.classList.remove('completed');
             }
+        }
+      
+        function animateWin() {
+            const cells = document.querySelectorAll('.cell:not(.deleted)');
+            cells.forEach((cell, index) => {
+                setTimeout(() => {
+                    cell.classList.add('win-animation');
+                    setTimeout(() => {
+                        cell.classList.remove('win-animation');
+                    }, 600);
+                }, index * 50);
+            });
         }
 
         function resetPuzzle() {
