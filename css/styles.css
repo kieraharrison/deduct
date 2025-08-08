@@ -443,6 +443,11 @@ input:checked + .toggle-slider:before {
         font-size: 16px;
         padding: 6px 12px;
     }
+
+    #gameTimer.paused {
+    opacity: 0.6;
+    color: orange;
+    }
     
     .status {
         font-size: 16px;
