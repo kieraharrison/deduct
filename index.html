@@ -373,21 +373,22 @@
         }
 
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px 10px;
+            font-size: 14px;
             font-family: 'Source Sans Pro', sans-serif;
-            font-weight: 300;
-            border: none;
+            font-weight: 600;
+            border: 2px; 
+            border-color: #848884;
             border-radius: 5px;
-            background-color: #0C4F4E;
-            color: #FFF6EB;
+            background-color: white;
+            color: black;
             cursor: pointer;
             margin: 0 10px;
             transition: all 0.2s;
         }
 
         button:hover {
-            background-color: #9EB5A3;
+            color: #0C4F4E;
             transform: translateY(-1px);
         }
 
@@ -407,18 +408,19 @@
             font-family: 'Source Sans Pro', sans-serif;
             font-weight: 300;
             border-radius: 5px;
-            background-color: #BC804D;
-            color: white;
+            background-color: #E5E4E2;
+            color: black;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .difficulty-btn:hover {
-            background-color: #9D442A;
+            background-color: #848884;
+            color: white;
         }
 
         .difficulty-btn.active {
-            background-color: #9D442A;
+            background-color: #848884;
             color: white;
         }
 
@@ -438,12 +440,10 @@
         }
       
       .timer {
-            margin: 15px 0;
             font-size: 18px;
             font-weight: 600;
             color: black;
             background-color: white;
-            padding: 8px 16px;
             border-radius: 8px;
             display: inline-block;
             min-width: 80px;
@@ -537,17 +537,7 @@
       
       <div class="timer" id="gameTimer">00:00</div>
       <div class="puzzle-info" id="puzzleInfo">Loading puzzle...</div>
-      
-      <div class="difficulty-container">
-          <div class="difficulty-label">Difficulty:</div>
-          <div class="difficulty-buttons">
-              <button class="difficulty-btn active" onclick="setDifficulty('easy')">Easy</button>
-              <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
-              <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
-          </div>
-      </div>
-      
-      <br/>
+
               
         <div class="grid-container">
             <div class="grid-wrapper" id="gridWrapper">
@@ -565,27 +555,31 @@
                 <div class="col-targets" id="colTargets"></div>
             </div>
         </div>
-      
-       <div class="instructions">
-            Select boxes to delete the numbers. Click once to delete and twice to take a note the cell must stay on the grid. Make each row and column sum to the target values!
-        </div>
         
         <div class="controls">
-            <button onclick="resetPuzzle()">Reset</button>
-            <button onclick="newPuzzle()">New Puzzle</button>
+            <span class="toggle-label">Start new game:</span>
+            <button class="difficulty-btn active" onclick="setDifficulty('easy')">Easy</button>
+            <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
+            <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
+           <br>
+            <button onclick="resetPuzzle()"> &#x21BB Restart Current Game</button>
         </div>
-      
-       <div class="guides-toggle">
-          <span class="toggle-label">Show difference guides:</span>
+     
+         
+      <br><br>
+         <div class="instructions">
+           <b>How to play:</b> Select boxes to delete the numbers. Click once to delete and twice to take a note the cell must stay on the grid. Make each row and column sum to the target values!
+           
+    </div>
+
+      <div class="guides-toggle">
+          <span class="toggle-label">Show how much you're trying deduct:</span>
           <label class="toggle-switch">
               <input type="checkbox" id="guidesToggle" checked onchange="toggleGuides()">
               <span class="toggle-slider"></span>
           </label>
       </div>
-        
-        <div class="status" id="gameStatus"></div>
-    </div>
-
+      
     <script>
         // Game state
         let gameState = {
