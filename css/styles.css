@@ -12,6 +12,12 @@
     --text-dark: #1F1D1D;
     --text-light: #FFF6EB;
     --border: #D7C2B0;
+    
+    /* Grid sizing variables for consistency */
+    --cell-size: 50px;
+    --cell-size-mobile: 40px;
+    --cell-size-small: 35px;
+    --grid-gap: 1px;
 }
 
 /* ==================== */
@@ -58,34 +64,34 @@ h1 {
 }
 
 /* ==================== */
-/* Grid Layout          */
+/* Grid Layout - FIXED  */
 /* ==================== */
 .grid-container {
     display: inline-block;
     position: relative;
-    overflow-x: auto;
     max-width: 100%;
+    margin: 0 auto;
 }
 
 .grid-wrapper {
     display: grid;
-    grid-template-columns: 60px repeat(7, 50px) 60px;
-    grid-template-rows: 40px repeat(7, 50px) 40px;
-    gap: 0;
-    background-color: #f3eded;
+    /* All columns and rows are now equal size */
+    grid-template-columns: var(--cell-size) repeat(7, var(--cell-size)) var(--cell-size);
+    grid-template-rows: var(--cell-size) repeat(7, var(--cell-size)) var(--cell-size);
+    gap: var(--grid-gap);
+    background-color: black;
+    padding: 0;
+    position: relative;
 }
 
 .grid {
     grid-column: 2 / 9;
     grid-row: 2 / 9;
     display: grid;
-    grid-template-columns: repeat(7, 50px);
-    grid-template-rows: repeat(7, 50px);
-    gap: 1px;
+    grid-template-columns: repeat(7, var(--cell-size));
+    grid-template-rows: repeat(7, var(--cell-size));
+    gap: var(--grid-gap);
     background-color: black;
-    outline: 1px solid black;
-    outline-offset: -1px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* ==================== */
@@ -103,24 +109,25 @@ h1 {
     user-select: none;
     color: var(--text-dark);
     -webkit-tap-highlight-color: transparent;
+    width: var(--cell-size);
+    height: var(--cell-size);
 }
 
 .cell.deleted {
     background-color: #D3D3D3;
     color: #495057;
-    border: 1px #f3eded;
 }
 
 .cell.confirmed {
     background-color: var(--light);
-    border: 1px #f3eded;
-    box-sizing: border-box;
     box-shadow: 0 2px 4px var(--light);
 }
 
 /* ==================== */
-/* Target Cells         */
+/* Target & Current Cells - FIXED */
 /* ==================== */
+
+/* Row targets (left column) */
 .row-target {
     grid-column: 1;
     background-color: #f3eded;
@@ -130,8 +137,12 @@ h1 {
     font-weight: 600;
     font-size: 14px;
     color: var(--text-dark);
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: 1px solid #f3eded;
 }
 
+/* Column targets (top row) */
 .col-target {
     grid-row: 1;
     background-color: #f3eded;
@@ -141,8 +152,12 @@ h1 {
     font-weight: 600;
     font-size: 14px;
     color: var(--text-dark);
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: 1px solid #f3eded;
 }
 
+/* Row current sums (right column) */
 .row-current {
     grid-column: 9;
     background-color: #f3eded;
@@ -152,8 +167,12 @@ h1 {
     font-weight: 400;
     font-size: 12px;
     color: var(--text-dark);
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: 1px solid #f3eded;
 }
 
+/* Column current sums (bottom row) */
 .col-current {
     grid-row: 9;
     background-color: #f3eded;
@@ -163,21 +182,35 @@ h1 {
     font-weight: 400;
     font-size: 12px;
     color: var(--text-dark);
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: 1px solid #f3eded;
 }
 
+/* Completed state styling */
 .target.complete, 
 .row-target.complete, 
 .col-target.complete {
     background-color: var(--primary) !important;
     color: #f3eded !important;
     border-radius: 6px;
-    box-shadow: 0px 0px 0px 3px #f3eded inset;
+    box-shadow: inset 0 0 0 3px #f3eded;
 }
 
 .row-current.complete, 
 .col-current.complete {
-    background-color: #f3eded !important;
-    color: #f3eded !important;
+    color: var(--primary) !important;
+    font-weight: 600;
+}
+
+/* Corner cells (empty) */
+.grid-wrapper::before,
+.grid-wrapper::after {
+    content: '';
+    display: block;
+    width: var(--cell-size);
+    height: var(--cell-size);
+    background-color: #f3eded;
 }
 
 /* ==================== */
@@ -269,6 +302,7 @@ button:hover {
 
 .timer.paused {
     opacity: 0.6;
+    color: var(--accent);
 }
 
 .status {
@@ -355,8 +389,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* ====================== */
-/* Modal Styles - NEW     */
-/* Branch: feature/modals */
+/* Modal Styles           */
 /* ====================== */
 
 .modal-overlay {
@@ -365,18 +398,18 @@ input:checked + .toggle-slider:before {
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw;        /* ADDED: Explicit full viewport width */
-    height: 100vh;       /* ADDED: Explicit full viewport height */
+    width: 100vw;
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 10000;      /* INCREASED: Much higher z-index to ensure it's on top */
+    z-index: 10000;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease;
-    margin: 0;           /* ADDED: Reset any inherited margins */
-    padding: 0;          /* ADDED: Reset any inherited padding */
+    margin: 0;
+    padding: 0;
 }
 
 .modal-overlay.active {
@@ -390,14 +423,14 @@ input:checked + .toggle-slider:before {
     padding: 30px;
     max-width: 400px;
     width: 90%;
-    max-height: 90vh;    /* ADDED: Prevent modal from being too tall */
+    max-height: 90vh;
     text-align: center;
     transform: scale(0.9);
     transition: transform 0.3s ease;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    position: relative;  /* ADDED: Ensure proper positioning context */
-    z-index: 10001;      /* ADDED: Higher than overlay */
-    overflow-y: auto;    /* ADDED: Handle content overflow */
+    position: relative;
+    z-index: 10001;
+    overflow-y: auto;
 }
 
 .modal-overlay.active .modal {
@@ -476,8 +509,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* ======================== */
-/* Win Modal - NEW          */
-/* Branch: feature/win-modal */
+/* Win Modal                */
 /* ======================== */
 
 .win-modal .modal {
@@ -524,8 +556,7 @@ body.modal-open {
 }
 
 /* ========================== */
-/* Confetti Animation - NEW   */
-/* Branch: feature/confetti   */
+/* Confetti Animation         */
 /* ========================== */
 .confetti {
     position: fixed;
@@ -592,16 +623,24 @@ body.modal-open {
         line-height: 1.4;
     }
     
+    /* Adjust grid for mobile */
     .grid-wrapper {
-        grid-template-columns: 40px repeat(7, 40px) 40px;
-        grid-template-rows: 32px repeat(7, 40px) 32px;
-        margin: 0 auto;
+        grid-template-columns: var(--cell-size-mobile) repeat(7, var(--cell-size-mobile)) var(--cell-size-mobile);
+        grid-template-rows: var(--cell-size-mobile) repeat(7, var(--cell-size-mobile)) var(--cell-size-mobile);
     }
     
     .grid {
-        grid-template-columns: repeat(7, 40px);
-        grid-template-rows: repeat(7, 40px);
-        outline: 2px solid black;
+        grid-template-columns: repeat(7, var(--cell-size-mobile));
+        grid-template-rows: repeat(7, var(--cell-size-mobile));
+    }
+    
+    .cell,
+    .row-target,
+    .col-target,
+    .row-current,
+    .col-current {
+        width: var(--cell-size-mobile);
+        height: var(--cell-size-mobile);
     }
     
     .cell {
@@ -622,7 +661,10 @@ body.modal-open {
         font-size: 14px;
         font-family: 'Source Sans Pro', sans-serif;
         font-weight: 600;
+        border: 2px solid #848884;
         border-radius: 5px;
+        background-color: #f3eded;
+        color: black;
         cursor: pointer;
         margin: 0 10px;
         transition: all 0.2s;
@@ -695,11 +737,11 @@ body.modal-open {
     }
     
     /* Modal responsive styles */
-        .modal {
+    .modal {
         padding: 20px;
-        max-width: 95%;      /* UPDATED: More space on small screens */
+        max-width: 95%;
         width: 95%;
-        margin: 10px;        /* ADDED: Small margin for very small screens */
+        margin: 10px;
     }
     
     .modal h2 {
@@ -743,14 +785,24 @@ body.modal-open {
         padding: 0 3px;
     }
     
+    /* Adjust grid for small mobile */
     .grid-wrapper {
-        grid-template-columns: 35px repeat(7, 35px) 35px;
-        grid-template-rows: 30px repeat(7, 35px) 30px;
+        grid-template-columns: var(--cell-size-small) repeat(7, var(--cell-size-small)) var(--cell-size-small);
+        grid-template-rows: var(--cell-size-small) repeat(7, var(--cell-size-small)) var(--cell-size-small);
     }
     
     .grid {
-        grid-template-columns: repeat(7, 35px);
-        grid-template-rows: repeat(7, 35px);
+        grid-template-columns: repeat(7, var(--cell-size-small));
+        grid-template-rows: repeat(7, var(--cell-size-small));
+    }
+    
+    .cell,
+    .row-target,
+    .col-target,
+    .row-current,
+    .col-current {
+        width: var(--cell-size-small);
+        height: var(--cell-size-small);
     }
     
     .cell {
@@ -798,11 +850,11 @@ body.modal-open {
     }
     
     /* Modal extra small styles */
-   .modal {
+    .modal {
         padding: 15px;
-        max-width: 98%;      /* UPDATED: Maximum space utilization */
+        max-width: 98%;
         width: 98%;
-        margin: 5px;         /* ADDED: Minimal margin */
+        margin: 5px;
     }
     
     .modal h2 {
