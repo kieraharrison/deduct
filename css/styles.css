@@ -64,7 +64,7 @@ h1 {
 }
 
 /* ==================== */
-/* Grid Layout - FIXED  */
+/* Grid Layout - UPDATED */
 /* ==================== */
 .grid-container {
     display: inline-block;
@@ -78,8 +78,8 @@ h1 {
     /* All columns and rows are now equal size */
     grid-template-columns: var(--cell-size) repeat(7, var(--cell-size)) var(--cell-size);
     grid-template-rows: var(--cell-size) repeat(7, var(--cell-size)) var(--cell-size);
-    gap: var(--grid-gap);
-    background-color: black;
+    gap: 0; /* Remove gap from wrapper */
+    background-color: #f3eded; /* Match background */
     padding: 0;
     position: relative;
 }
@@ -91,7 +91,7 @@ h1 {
     grid-template-columns: repeat(7, var(--cell-size));
     grid-template-rows: repeat(7, var(--cell-size));
     gap: var(--grid-gap);
-    background-color: black;
+    background-color: black; /* Keep black gridlines only for inner grid */
 }
 
 /* ==================== */
@@ -124,7 +124,7 @@ h1 {
 }
 
 /* ==================== */
-/* Target & Current Cells - FIXED */
+/* Target & Current Cells - UPDATED */
 /* ==================== */
 
 /* Row targets (left column) */
@@ -139,7 +139,7 @@ h1 {
     color: var(--text-dark);
     width: var(--cell-size);
     height: var(--cell-size);
-    border: 1px solid #f3eded;
+    border: none; /* Remove border */
 }
 
 /* Column targets (top row) */
@@ -154,7 +154,7 @@ h1 {
     color: var(--text-dark);
     width: var(--cell-size);
     height: var(--cell-size);
-    border: 1px solid #f3eded;
+    border: none; /* Remove border */
 }
 
 /* Row current sums (right column) */
@@ -169,7 +169,7 @@ h1 {
     color: var(--text-dark);
     width: var(--cell-size);
     height: var(--cell-size);
-    border: 1px solid #f3eded;
+    border: none; /* Remove border */
 }
 
 /* Column current sums (bottom row) */
@@ -184,7 +184,7 @@ h1 {
     color: var(--text-dark);
     width: var(--cell-size);
     height: var(--cell-size);
-    border: 1px solid #f3eded;
+    border: none; /* Remove border */
 }
 
 /* Completed state styling */
@@ -203,7 +203,7 @@ h1 {
     font-weight: 600;
 }
 
-/* Corner cells (empty) */
+/* Corner cells - make them invisible/match background */
 .grid-wrapper::before,
 .grid-wrapper::after {
     content: '';
@@ -211,6 +211,7 @@ h1 {
     width: var(--cell-size);
     height: var(--cell-size);
     background-color: #f3eded;
+    border: none;
 }
 
 /* ==================== */
