@@ -112,10 +112,10 @@ h1 {
 }
 
 .cell.confirmed {
-    background-color: var(--primary);
+    background-color: var(--light);
     border: 1px #f3eded;
     box-sizing: border-box;
-    box-shadow: 0 2px 4px var(--primary);
+    box-shadow: 0 2px 4px var(--light);
 }
 
 
@@ -133,11 +133,6 @@ h1 {
     color: var(--text-dark);
 }
 
-.row-target.over-target {
-    color: var(--secondary);
-    font-weight: 700;
-}
-
 .col-target {
     grid-row: 1;
     background-color: #f3eded;
@@ -147,11 +142,6 @@ h1 {
     font-weight: 600;
     font-size: 14px;
     color: var(--text-dark);
-}
-
-.col-target.over-target {
-    color: var(--secondary);
-    font-weight: 700;
 }
 
 .row-current {
@@ -205,15 +195,15 @@ button {
     font-weight: 300;
     border: none;
     border-radius: 8px;
-    background-color: var(--primary);
-    color: var(--light);
+    background-color: var(--whiteish);
+    color: black;
     cursor: pointer;
     margin: 0 10px;
     transition: all 0.2s;
 }
 
 button:hover {
-    background-color: var(--accent);
+    color: var(--primary);
     transform: translateY(-1px);
 }
 
@@ -241,13 +231,13 @@ button:hover {
 }
 
 .difficulty-btn:hover {
-    background-color: var(--accent);
-    color: var(--text-light);
+    background-color: #848884;
+    color: white;
 }
 
 .difficulty-btn.active {
-    background-color: var(--primary);
-    color: var(--light);
+    background-color: #848884;
+    color: white;
 }
 
 .difficulty-label {
@@ -353,11 +343,12 @@ button:hover {
 }
 
 input:checked + .toggle-slider {
-    background-color: var(--primary);
+    background-color: var(--light);
 }
 
 input:checked + .toggle-slider:before {
     transform: translateX(26px);
+    background-color: var(--primary);
 }
 
 .toggle-label {
