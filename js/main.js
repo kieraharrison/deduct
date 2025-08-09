@@ -11,12 +11,11 @@ class DeductGame {
         this.gameState = new GameState();
         this.timer = new Timer();
         this.renderer = new UIRenderer(this.gameState, this.timer);
-        this.gameInitialized = false;  // NEW: Track if game has been initialized
+        this.gameInitialized = false;  // Track if game has been initialized
         
         this.initializeEventListeners();
         
-        // NEW: Show welcome modal on first load instead of generating puzzle
-        // Branch: feature/welcome-modal
+        // Show welcome modal on first load instead of generating puzzle
         this.showWelcomeModal();
     }
     
@@ -37,7 +36,7 @@ class DeductGame {
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 console.log('Reset button clicked');
-                // NEW: Check if game initialized before reset
+                // Check if game initialized before reset
                 if (this.gameInitialized) {
                     this.resetPuzzle();
                 } else {
@@ -46,14 +45,16 @@ class DeductGame {
             });
         }
         
-        // Guides toggle
+        // Guides toggle - FIX: Only toggle guides, don't do anything else
         const guidesToggle = document.getElementById('guidesToggle');
         if (guidesToggle) {
             guidesToggle.addEventListener('change', (e) => {
                 console.log('Guides toggle changed:', e.target.checked);
-                if (this.gameInitialized) {  // NEW: Only toggle if game initialized
+                // FIX: Always allow guides toggle if game is initialized, do nothing if not
+                if (this.gameInitialized) {
                     this.toggleGuides(e.target.checked);
                 }
+                // FIX: Remove any implicit else behavior that might cause issues
             });
         }
         
@@ -61,15 +62,13 @@ class DeductGame {
         const gameGrid = document.getElementById('gameGrid');
         if (gameGrid) {
             gameGrid.addEventListener('click', (e) => {
-                // NEW: Prevent clicks if game not initialized
-                // Branch: bugfix/initial-click
-                if (!this.gameInitialized) {
-                    console.log('Game not initialized, showing welcome modal');
-                    this.showWelcomeModal();
-                    return;
-                }
-                
                 if (e.target.classList.contains('cell')) {
+                    // FIX: Only check if game is initialized, don't show modal on every click
+                    if (!this.gameInitialized) {
+                        console.log('Game not initialized, ignoring click');
+                        return; // Simply ignore the click instead of showing modal
+                    }
+                    
                     const index = Array.from(e.target.parentNode.children).indexOf(e.target);
                     const row = Math.floor(index / 7);
                     const col = index % 7;
@@ -81,24 +80,18 @@ class DeductGame {
             console.error('gameGrid element not found');
         }
         
-        // NEW: Welcome modal difficulty buttons
-        // Branch: feature/welcome-modal
-        const easyStart = document.getElementById('easyStart');
-        const mediumStart = document.getElementById('mediumStart');
-        const hardStart = document.getElementById('hardStart');
+        // Welcome modal difficulty buttons - need to handle these with delegation
+        // since the modal elements might not exist yet
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('difficulty-btn') && e.target.closest('#welcomeModal')) {
+                const difficulty = e.target.dataset.difficulty;
+                if (difficulty) {
+                    this.startGame(difficulty);
+                }
+            }
+        });
         
-        if (easyStart) {
-            easyStart.addEventListener('click', () => this.startGame('easy'));
-        }
-        if (mediumStart) {
-            mediumStart.addEventListener('click', () => this.startGame('medium'));
-        }
-        if (hardStart) {
-            hardStart.addEventListener('click', () => this.startGame('hard'));
-        }
-        
-        // NEW: Win modal buttons
-        // Branch: feature/win-celebration
+        // Win modal buttons
         const playAgainBtn = document.getElementById('playAgainBtn');
         const changeDifficultyBtn = document.getElementById('changeDifficultyBtn');
         
@@ -110,37 +103,29 @@ class DeductGame {
         }
     }
     
-    // NEW: Show welcome modal
-    // Branch: feature/welcome-modal
+    // Show welcome modal
     showWelcomeModal() {
-            const modal = document.getElementById('welcomeModal');
-            if (modal) {
-                // FIX: Prevent body scroll when modal is open
-                document.body.classList.add('modal-open');
-                modal.classList.add('active');
-                
-                // DEBUG: Log modal position for troubleshooting
-                console.log('Welcome modal shown, position:', {
-                    position: getComputedStyle(modal).position,
-                    zIndex: getComputedStyle(modal).zIndex,
-                    top: getComputedStyle(modal).top,
-                    left: getComputedStyle(modal).left
-                });
-            }
+        const modal = document.getElementById('welcomeModal');
+        if (modal) {
+            // Prevent body scroll when modal is open
+            document.body.classList.add('modal-open');
+            modal.classList.add('active');
+            
+            console.log('Welcome modal shown');
         }
-        
-        // NEW: Hide welcome modal with scroll restoration
-        hideWelcomeModal() {
-            const modal = document.getElementById('welcomeModal');
-            if (modal) {
-                modal.classList.remove('active');
-                // FIX: Restore body scroll when modal is closed
-                document.body.classList.remove('modal-open');
-            }
-        }
+    }
     
-    // NEW: Start game with selected difficulty
-    // Branch: feature/welcome-modal
+    // Hide welcome modal with scroll restoration
+    hideWelcomeModal() {
+        const modal = document.getElementById('welcomeModal');
+        if (modal) {
+            modal.classList.remove('active');
+            // Restore body scroll when modal is closed
+            document.body.classList.remove('modal-open');
+        }
+    }
+    
+    // Start game with selected difficulty
     startGame(difficulty) {
         console.log('Starting game with difficulty:', difficulty);
         
@@ -150,7 +135,9 @@ class DeductGame {
         // Set difficulty and generate puzzle
         this.gameState.difficulty = difficulty;
         this.newPuzzle();
-        this.gameInitialized = true;  // NEW: Mark game as initialized
+        
+        // FIX: Set gameInitialized AFTER puzzle is fully generated and rendered
+        this.gameInitialized = true;
         
         // Update difficulty buttons
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
@@ -164,7 +151,7 @@ class DeductGame {
     setDifficulty(difficulty) {
         console.log('Setting difficulty to:', difficulty);
         
-        // NEW: Check if game initialized
+        // Check if game initialized
         if (!this.gameInitialized) {
             this.startGame(difficulty);
             return;
@@ -182,8 +169,8 @@ class DeductGame {
         
         // Generate new puzzle with selected difficulty
         this.newPuzzle();
-
-        // Add this line to mark game as initialized
+        
+        // FIX: Ensure gameInitialized stays true since we're just changing difficulty
         this.gameInitialized = true;
     }
     
@@ -212,8 +199,7 @@ class DeductGame {
         }
     }
     
-    // UPDATED: Enhanced win handler with modal
-    // Branch: feature/win-celebration
+    // Enhanced win handler with modal
     handleWin() {
         console.log('Handling win');
         this.gameState.gameCompleted = true;
@@ -221,47 +207,37 @@ class DeductGame {
         this.renderer.showWinStatus();
         this.renderer.animateWin();
         
-        // NEW: Show win modal after animation starts
+        // Show win modal after animation starts
         setTimeout(() => {
             this.showWinModal();
-            this.createConfetti();  // NEW: Add confetti effect
+            this.createConfetti();
         }, 500);
     }
     
-    // NEW: Show win modal
-    // Branch: feature/win-celebration
+    // Show win modal
     showWinModal() {
-            const modal = document.getElementById('winModal');
-            const timeDisplay = document.getElementById('winTime');
-            
-            if (modal && timeDisplay) {
-                timeDisplay.textContent = this.timer.getFormattedTime();
-                // FIX: Prevent body scroll when modal is open
-                document.body.classList.add('modal-open');
-                modal.classList.add('active');
-                
-                // DEBUG: Log modal position for troubleshooting
-                console.log('Win modal shown, position:', {
-                    position: getComputedStyle(modal).position,
-                    zIndex: getComputedStyle(modal).zIndex,
-                    top: getComputedStyle(modal).top,
-                    left: getComputedStyle(modal).left
-                });
-            }
-        }
+        const modal = document.getElementById('winModal');
+        const timeDisplay = document.getElementById('winTime');
         
-        // NEW: Hide win modal with scroll restoration
-        hideWinModal() {
-            const modal = document.getElementById('winModal');
-            if (modal) {
-                modal.classList.remove('active');
-                // FIX: Restore body scroll when modal is closed
-                document.body.classList.remove('modal-open');
-            }
+        if (modal && timeDisplay) {
+            timeDisplay.textContent = this.timer.getFormattedTime();
+            // Prevent body scroll when modal is open
+            document.body.classList.add('modal-open');
+            modal.classList.add('active');
         }
+    }
     
-    // NEW: Create confetti effect
-    // Branch: feature/win-celebration
+    // Hide win modal with scroll restoration
+    hideWinModal() {
+        const modal = document.getElementById('winModal');
+        if (modal) {
+            modal.classList.remove('active');
+            // Restore body scroll when modal is closed
+            document.body.classList.remove('modal-open');
+        }
+    }
+    
+    // Create confetti effect
     createConfetti() {
         const colors = ['#6482fc', '#fbb45c', '#bfc0f3', '#90EE90', '#FFD700', '#FFA07A'];
         
@@ -280,18 +256,17 @@ class DeductGame {
         }
     }
     
-    // NEW: Play again with same difficulty
-    // Branch: feature/win-celebration
+    // Play again with same difficulty
     playAgain() {
         this.hideWinModal();
         this.newPuzzle();
     }
     
-    // NEW: Change difficulty after win
-    // Branch: feature/win-celebration
+    // Change difficulty after win
     changeDifficulty() {
         this.hideWinModal();
         this.showWelcomeModal();
+        // FIX: Don't reset gameInitialized here, let the user choose
     }
     
     resetPuzzle() {
@@ -324,9 +299,6 @@ class DeductGame {
         this.renderer.updateStatus();
         this.renderer.updateTimerDisplay();
 
-        // FIX: Add this line to mark game as initialized
-        this.gameInitialized = true;
-
         console.log('New puzzle setup complete');
     }
     
@@ -338,8 +310,6 @@ class DeductGame {
 }
 
 // Initialize game when DOM is ready
-// UPDATED: Only create game instance, don't generate puzzle yet
-// Branch: bugfix/initial-load
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing game...');
     window.game = new DeductGame();
