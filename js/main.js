@@ -113,19 +113,31 @@ class DeductGame {
     // NEW: Show welcome modal
     // Branch: feature/welcome-modal
     showWelcomeModal() {
-        const modal = document.getElementById('welcomeModal');
-        if (modal) {
-            modal.classList.add('active');
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                // FIX: Prevent body scroll when modal is open
+                document.body.classList.add('modal-open');
+                modal.classList.add('active');
+                
+                // DEBUG: Log modal position for troubleshooting
+                console.log('Welcome modal shown, position:', {
+                    position: getComputedStyle(modal).position,
+                    zIndex: getComputedStyle(modal).zIndex,
+                    top: getComputedStyle(modal).top,
+                    left: getComputedStyle(modal).left
+                });
+            }
         }
-    }
-    
-    // NEW: Hide welcome modal
-    hideWelcomeModal() {
-        const modal = document.getElementById('welcomeModal');
-        if (modal) {
-            modal.classList.remove('active');
+        
+        // NEW: Hide welcome modal with scroll restoration
+        hideWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.classList.remove('active');
+                // FIX: Restore body scroll when modal is closed
+                document.body.classList.remove('modal-open');
+            }
         }
-    }
     
     // NEW: Start game with selected difficulty
     // Branch: feature/welcome-modal
@@ -216,22 +228,34 @@ class DeductGame {
     // NEW: Show win modal
     // Branch: feature/win-celebration
     showWinModal() {
-        const modal = document.getElementById('winModal');
-        const timeDisplay = document.getElementById('winTime');
+            const modal = document.getElementById('winModal');
+            const timeDisplay = document.getElementById('winTime');
+            
+            if (modal && timeDisplay) {
+                timeDisplay.textContent = this.timer.getFormattedTime();
+                // FIX: Prevent body scroll when modal is open
+                document.body.classList.add('modal-open');
+                modal.classList.add('active');
+                
+                // DEBUG: Log modal position for troubleshooting
+                console.log('Win modal shown, position:', {
+                    position: getComputedStyle(modal).position,
+                    zIndex: getComputedStyle(modal).zIndex,
+                    top: getComputedStyle(modal).top,
+                    left: getComputedStyle(modal).left
+                });
+            }
+        }
         
-        if (modal && timeDisplay) {
-            timeDisplay.textContent = this.timer.getFormattedTime();
-            modal.classList.add('active');
+        // NEW: Hide win modal with scroll restoration
+        hideWinModal() {
+            const modal = document.getElementById('winModal');
+            if (modal) {
+                modal.classList.remove('active');
+                // FIX: Restore body scroll when modal is closed
+                document.body.classList.remove('modal-open');
+            }
         }
-    }
-    
-    // NEW: Hide win modal
-    hideWinModal() {
-        const modal = document.getElementById('winModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-    }
     
     // NEW: Create confetti effect
     // Branch: feature/win-celebration
