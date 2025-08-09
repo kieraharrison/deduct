@@ -69,7 +69,15 @@ class DeductGame {
                         return; // Simply ignore the click instead of showing modal
                     }
                     
-                    const index = Array.from(e.target.parentNode.children).indexOf(e.target);
+                    // FIX: Safer way to get cell index
+                    const cells = Array.from(gameGrid.children);
+                    const index = cells.indexOf(e.target);
+                    
+                    if (index === -1) {
+                        console.log('Could not find cell index');
+                        return;
+                    }
+                    
                     const row = Math.floor(index / 7);
                     const col = index % 7;
                     console.log(`Cell clicked: ${row}, ${col}`);
@@ -334,15 +342,13 @@ class DeductGame {
     }
 }
 
-// Initialize game when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing game...');
-    window.game = new DeductGame();
-});
-
-// Also try immediate initialization in case DOMContentLoaded already fired
+// Initialize game when DOM is ready - FIX: Only initialize once
 if (document.readyState === 'loading') {
     console.log('Document still loading, waiting for DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, initializing game...');
+        window.game = new DeductGame();
+    });
 } else {
     // DOM already loaded
     console.log('DOM already loaded, initializing game immediately...');
