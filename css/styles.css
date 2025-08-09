@@ -3,16 +3,16 @@
 /* ==================== */
 /* Root Variables/Theme */
 /* ==================== */
-:root {
+    :root {
     --bg: #FDF9F5;
-    --primary: #0C4F4E;
-    --secondary: #9D442A;
-    --accent: #9EB5A3;
-    --light: #FFF6EB;
+    --primary: #6482fc;
+    --accent: #fbb45c;
+    --light: #bfc0f3;
+    --whiteish: #f3eded;
     --text-dark: #1F1D1D;
     --text-light: #FFF6EB;
     --border: #D7C2B0;
-}
+    }
 
 /* ==================== */
 /* Base Styles          */
@@ -104,10 +104,6 @@ h1 {
     -webkit-tap-highlight-color: transparent;
 }
 
-.cell:hover {
-    background-color: #F5F5F5;
-}
-
 .cell.deleted {
     background-color: #E9ECEF;
     color: #495057;
@@ -119,10 +115,6 @@ h1 {
     border: 1px white;
     box-sizing: border-box;
     box-shadow: 0 2px 4px rgba(127, 166, 136, 0.3);
-}
-
-.cell.confirmed:hover {
-    background-color: #8AA690;
 }
 
 /* ==================== */
