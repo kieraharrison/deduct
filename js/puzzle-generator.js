@@ -5,28 +5,32 @@ export class PuzzleGenerator {
         this.size = size;
         this.difficulty = difficulty;
         
-        // Difficulty settings configuration
+        // UPDATED: Enhanced difficulty settings with more variation
+        // Branch: feature/enhanced-difficulty
         const difficultySettings = {
             easy: {
                 minValue: 1,
-                maxValue: 6,
-                minKeepCells: 4,  // More cells kept (fewer deletions needed)
-                maxKeepCells: 6,  // 1-3 deletions per row/column
-                maxDuplicates: 4  // Allow more duplicates for easier patterns
+                maxValue: 5,  // CHANGED: Reduced from 6 to make smaller sums
+                minKeepCells: 5,  // CHANGED: Increased from 4 to keep more cells (easier)
+                maxKeepCells: 7,  // CHANGED: Increased from 6 - only 0-2 deletions per row/column
+                maxDuplicates: 2,  // CHANGED: Reduced from 4 for more unique numbers
+                targetSumMultiplier: 0.7  // NEW: Multiplier for target sums (not currently used)
             },
             medium: {
                 minValue: 1,
                 maxValue: 9,
-                minKeepCells: 2,  // 2-5 deletions per row/column
+                minKeepCells: 3,  // CHANGED: Increased from 2
                 maxKeepCells: 5,
-                maxDuplicates: 3
+                maxDuplicates: 3,
+                targetSumMultiplier: 0.8  // NEW: Multiplier for target sums
             },
             hard: {
-                minValue: 1,
-                maxValue: 9,
-                minKeepCells: 1,  // 1-6 deletions per row/column
-                maxKeepCells: 6,
-                maxDuplicates: 2  // Fewer duplicates for more complexity
+                minValue: 2,  // CHANGED: Increased from 1
+                maxValue: 12,  // CHANGED: Increased from 9 for more complexity
+                minKeepCells: 1,
+                maxKeepCells: 4,  // CHANGED: Reduced from 6 for more deletions needed
+                maxDuplicates: 4,  // CHANGED: Increased from 2 to make pattern recognition harder
+                targetSumMultiplier: 0.9  // NEW: Multiplier for target sums
             }
         };
         
@@ -36,6 +40,7 @@ export class PuzzleGenerator {
         this.minKeepCells = settings.minKeepCells;
         this.maxKeepCells = settings.maxKeepCells;
         this.maxDuplicates = settings.maxDuplicates;
+        this.targetSumMultiplier = settings.targetSumMultiplier;  // NEW
         this.maxAttempts = 1000;
     }
 
@@ -132,6 +137,8 @@ export class PuzzleGenerator {
     createGrid() {
         const grid = [];
         
+        // UPDATED: Better distribution of unique numbers for easy mode
+        // Branch: feature/enhanced-difficulty
         for (let i = 0; i < this.size; i++) {
             const row = [];
             const usedCounts = {};
@@ -140,10 +147,25 @@ export class PuzzleGenerator {
                 let value;
                 let attempts = 0;
                 
-                do {
-                    value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                    attempts++;
-                } while (usedCounts[value] >= this.maxDuplicates && attempts < 50);
+                // NEW: For easy mode, try to use more unique numbers
+                if (this.difficulty === 'easy') {
+                    const availableValues = [];
+                    for (let v = this.minValue; v <= this.maxValue; v++) {
+                        if ((usedCounts[v] || 0) < this.maxDuplicates) {
+                            availableValues.push(v);
+                        }
+                    }
+                    if (availableValues.length > 0) {
+                        value = availableValues[Math.floor(Math.random() * availableValues.length)];
+                    } else {
+                        value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
+                    }
+                } else {
+                    do {
+                        value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
+                        attempts++;
+                    } while (usedCounts[value] >= this.maxDuplicates && attempts < 50);
+                }
                 
                 usedCounts[value] = (usedCounts[value] || 0) + 1;
                 row.push(value);
@@ -256,23 +278,59 @@ export class PuzzleGenerator {
         return arr;
     }
 
+    // UPDATED: Different fallback puzzles for each difficulty
+    // Branch: feature/enhanced-difficulty
     generateFallbackPuzzle() {
-        console.log('Using fallback puzzle');
-        // Simple fallback puzzle that's guaranteed to be valid
-        return {
-            grid: [
-                [3, 7, 2, 8, 1, 6, 4],
-                [5, 1, 9, 3, 7, 2, 8],
-                [2, 8, 4, 6, 3, 1, 7],
-                [7, 3, 6, 1, 9, 4, 2],
-                [1, 5, 8, 7, 2, 9, 3],
-                [9, 2, 1, 4, 8, 3, 6],
-                [4, 6, 3, 2, 5, 7, 1]
-            ],
-            rowTargets: [15, 20, 18, 16, 22, 19, 14],
-            colTargets: [17, 21, 19, 15, 18, 16, 20],
-            solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
-            difficulty: this.difficulty
+        console.log('Using fallback puzzle for difficulty:', this.difficulty);
+        
+        const fallbackPuzzles = {
+            easy: {
+                grid: [
+                    [2, 3, 1, 4, 2, 3, 1],
+                    [1, 2, 3, 1, 4, 2, 3],
+                    [3, 1, 2, 3, 1, 4, 2],
+                    [2, 4, 1, 2, 3, 1, 4],
+                    [4, 2, 3, 1, 2, 3, 1],
+                    [1, 3, 4, 2, 1, 2, 3],
+                    [3, 1, 2, 4, 3, 1, 2]
+                ],
+                rowTargets: [10, 12, 11, 9, 13, 11, 10],
+                colTargets: [11, 10, 12, 10, 11, 9, 13],
+                solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
+                difficulty: 'easy'
+            },
+            medium: {
+                grid: [
+                    [3, 7, 2, 8, 1, 6, 4],
+                    [5, 1, 9, 3, 7, 2, 8],
+                    [2, 8, 4, 6, 3, 1, 7],
+                    [7, 3, 6, 1, 9, 4, 2],
+                    [1, 5, 8, 7, 2, 9, 3],
+                    [9, 2, 1, 4, 8, 3, 6],
+                    [4, 6, 3, 2, 5, 7, 1]
+                ],
+                rowTargets: [15, 20, 18, 16, 22, 19, 14],
+                colTargets: [17, 21, 19, 15, 18, 16, 20],
+                solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
+                difficulty: 'medium'
+            },
+            hard: {
+                grid: [
+                    [8, 12, 3, 10, 5, 9, 7],
+                    [6, 4, 11, 8, 12, 3, 10],
+                    [10, 7, 5, 12, 6, 8, 4],
+                    [12, 9, 8, 4, 11, 6, 10],
+                    [5, 11, 10, 7, 3, 12, 8],
+                    [7, 3, 12, 9, 10, 5, 11],
+                    [11, 8, 6, 5, 7, 10, 3]
+                ],
+                rowTargets: [25, 30, 28, 32, 26, 29, 24],
+                colTargets: [28, 27, 30, 26, 29, 25, 31],
+                solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
+                difficulty: 'hard'
+            }
         };
+        
+        return fallbackPuzzles[this.difficulty] || fallbackPuzzles.medium;
     }
 }
