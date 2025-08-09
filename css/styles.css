@@ -358,20 +358,25 @@ input:checked + .toggle-slider:before {
 /* Modal Styles - NEW     */
 /* Branch: feature/modals */
 /* ====================== */
+
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100vw;        /* ADDED: Explicit full viewport width */
+    height: 100vh;       /* ADDED: Explicit full viewport height */
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 10000;      /* INCREASED: Much higher z-index to ensure it's on top */
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease;
+    margin: 0;           /* ADDED: Reset any inherited margins */
+    padding: 0;          /* ADDED: Reset any inherited padding */
 }
 
 .modal-overlay.active {
@@ -385,10 +390,14 @@ input:checked + .toggle-slider:before {
     padding: 30px;
     max-width: 400px;
     width: 90%;
+    max-height: 90vh;    /* ADDED: Prevent modal from being too tall */
     text-align: center;
     transform: scale(0.9);
     transition: transform 0.3s ease;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;  /* ADDED: Ensure proper positioning context */
+    z-index: 10001;      /* ADDED: Higher than overlay */
+    overflow-y: auto;    /* ADDED: Handle content overflow */
 }
 
 .modal-overlay.active .modal {
@@ -460,6 +469,7 @@ input:checked + .toggle-slider:before {
 /* Win Modal - NEW          */
 /* Branch: feature/win-modal */
 /* ======================== */
+
 .win-modal .modal {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -496,6 +506,11 @@ input:checked + .toggle-slider:before {
     background-color: #f0f0f0;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+/* ADDITIONAL FIX: Ensure body doesn't scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
 }
 
 /* ========================== */
@@ -673,9 +688,11 @@ input:checked + .toggle-slider:before {
     }
     
     /* Modal responsive styles */
-    .modal {
+        .modal {
         padding: 20px;
-        max-width: 90%;
+        max-width: 95%;      /* UPDATED: More space on small screens */
+        width: 95%;
+        margin: 10px;        /* ADDED: Small margin for very small screens */
     }
     
     .modal h2 {
@@ -774,8 +791,11 @@ input:checked + .toggle-slider:before {
     }
     
     /* Modal extra small styles */
-    .modal {
+   .modal {
         padding: 15px;
+        max-width: 98%;      /* UPDATED: Maximum space utilization */
+        width: 98%;
+        margin: 5px;         /* ADDED: Minimal margin */
     }
     
     .modal h2 {
