@@ -433,12 +433,24 @@ input:checked + .toggle-slider:before {
     }
     
     button {
-        padding: 12px 16px;
-        font-size: 15px;
-        margin: 5px;
-        border-radius: 8px;
-        background-color: var(--primary);
+        padding: 10px 10px;
+        font-size: 14px;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-weight: 600;
+        border: 2px; 
+        border-color: #848884;
+        border-radius: 5px;
+        background-color: #f3eded;
+        color: black;
+        cursor: pointer;
+        margin: 0 10px;
+        transition: all 0.2s;
     }
+
+    button:hover {
+          color: #6482fc;
+          transform: translateY(-1px);
+      }
     
     .difficulty-buttons {
         gap: 8px;
@@ -447,11 +459,27 @@ input:checked + .toggle-slider:before {
     }
     
     .difficulty-btn {
-        padding: 10px 14px;
-        font-size: 13px;
-        border-radius: 8px;
-        background-color: #E5E4E2;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-family: 'Source Sans Pro', sans-serif;
+      font-weight: 600;
+      border-radius: 5px;
+      background-color: #E5E4E2;
+      color: black;
+      cursor: pointer;
+      transition: all 0.2s;
     }
+
+    .difficulty-btn:hover {
+        background-color: #848884;
+        color: #f3eded;
+    }
+
+    .difficulty-btn.active {
+        background-color: #848884;
+        color: #f3eded;
+    }
+    
     
     .difficulty-label {
         font-size: 20px;
