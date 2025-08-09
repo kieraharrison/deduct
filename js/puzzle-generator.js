@@ -44,7 +44,10 @@ export class PuzzleGenerator {
         
         for (let attempt = 0; attempt < this.maxAttempts; attempt++) {
             const puzzle = this.attemptGeneration();
-            if (puzzle) return puzzle;
+            if (puzzle) {
+                console.log('Successfully generated puzzle');
+                return puzzle;
+            }
         }
         
         console.log("Could not generate valid puzzle, using fallback");
@@ -254,6 +257,7 @@ export class PuzzleGenerator {
     }
 
     generateFallbackPuzzle() {
+        console.log('Using fallback puzzle');
         // Simple fallback puzzle that's guaranteed to be valid
         return {
             grid: [
