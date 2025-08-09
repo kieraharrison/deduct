@@ -25,12 +25,14 @@
     <!-- Win Modal - MOVED OUTSIDE game-container -->
     <div id="winModal" class="modal-overlay win-modal">
         <div class="modal">
-            <h2>🎉 Congratulations! 🎉</h2>
+            <h2>Congratulations!</h2>
             <p>You solved the puzzle!</p>
             <div class="time-display" id="winTime">00:00</div>
-            <div>
-                <button id="playAgainBtn">Play Again</button>
-                <button id="changeDifficultyBtn">Change Difficulty</button>
+            <p>Start a new game:</p>
+            <div class="difficulty-selection">
+                <button class="difficulty-btn" data-difficulty="easy">Easy</button>
+                <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
             </div>
         </div>
     </div>
