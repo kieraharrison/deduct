@@ -210,7 +210,7 @@ button {
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 300;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     background-color: var(--primary);
     color: var(--light);
     cursor: pointer;
@@ -238,7 +238,7 @@ button:hover {
     font-size: 14px;
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 300;
-    border-radius: 5px;
+    border-radius: 8px;
     background-color: #BC804D;
     color: white;
     cursor: pointer;
@@ -280,6 +280,11 @@ button:hover {
     background-color: var(--secondary);
     color: var(--light);
     border-color: var(--secondary);
+}
+
+.timer.paused {
+    opacity: 0.6;
+    color: orange;
 }
 
 .status {
@@ -335,7 +340,7 @@ button:hover {
     bottom: 0;
     background-color: #ccc;
     transition: 0.3s;
-    border-radius: 4px;
+    border-radius: 24px;
 }
 
 .toggle-slider:before {
@@ -347,7 +352,7 @@ button:hover {
     bottom: 3px;
     background-color: white;
     transition: 0.3s;
-    border-radius: 2px;
+    border-radius: 50%;
 }
 
 input:checked + .toggle-slider {
@@ -386,40 +391,47 @@ input:checked + .toggle-slider:before {
 /* Mobile Responsive    */
 /* ==================== */
 @media (max-width: 600px) {
+    body {
+        padding: 5px;
+    }
+    
     .game-container {
-        padding: 15px;
+        padding: 20px 15px;
         border-radius: 10px;
     }
     
     h1 {
-        font-size: 1.5em;
+        font-size: 80px;
         margin-bottom: 15px;
+        line-height: 1;
     }
     
     .instructions {
-        font-size: 12px;
+        font-size: 13px;
         margin-bottom: 15px;
-        padding: 0 10px;
+        padding: 0 5px;
+        line-height: 1.4;
     }
     
     .grid-wrapper {
-        grid-template-columns: 40px repeat(7, 38px) 40px;
-        grid-template-rows: 30px repeat(7, 38px) 30px;
+        grid-template-columns: 40px repeat(7, 40px) 40px;
+        grid-template-rows: 32px repeat(7, 40px) 32px;
         margin: 0 auto;
     }
     
     .grid {
-        grid-template-columns: repeat(7, 38px);
-        grid-template-rows: repeat(7, 38px);
+        grid-template-columns: repeat(7, 40px);
+        grid-template-rows: repeat(7, 40px);
         outline: 2px solid black;
     }
     
     .cell {
-        font-size: 14px;
+        font-size: 16px;
     }
     
     .row-target, .col-target {
-        font-size: 12px;
+        font-size: 13px;
+        font-weight: 600;
     }
     
     .row-current, .col-current {
@@ -427,67 +439,126 @@ input:checked + .toggle-slider:before {
     }
     
     button {
-        padding: 8px 15px;
-        font-size: 14px;
-        margin: 0 5px;
-        background-color: #BC804D;
+        padding: 12px 16px;
+        font-size: 15px;
+        margin: 5px;
+        border-radius: 8px;
+        background-color: var(--primary);
+    }
+    
+    .difficulty-buttons {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     
     .difficulty-btn {
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 10px 14px;
+        font-size: 13px;
+        border-radius: 8px;
         background-color: #BC804D;
     }
     
-    .timer {
-        font-size: 16px;
-        padding: 6px 12px;
+    .difficulty-label {
+        font-size: 20px;
+        margin-bottom: 10px;
     }
-
-    #gameTimer.paused {
-    opacity: 0.6;
-    color: orange;
+    
+    .timer {
+        font-size: 17px;
+        padding: 10px 14px;
+        margin: 10px 0;
     }
     
     .status {
-        font-size: 16px;
+        font-size: 17px;
+        margin-top: 12px;
+    }
+    
+    .status.win {
+        font-size: 22px;
     }
     
     .controls {
         margin-top: 15px;
     }
+    
+    .guides-toggle {
+        margin: 12px 0;
+        gap: 12px;
+    }
+    
+    .toggle-label {
+        font-size: 15px;
+    }
 }
 
 /* Extra small mobile screens */
 @media (max-width: 380px) {
+    .game-container {
+        padding: 15px 10px;
+    }
+    
+    h1 {
+        font-size: 70px;
+    }
+    
+    .instructions {
+        font-size: 12px;
+        padding: 0 3px;
+    }
+    
     .grid-wrapper {
-        grid-template-columns: 35px repeat(7, 32px) 35px;
-        grid-template-rows: 28px repeat(7, 32px) 28px;
+        grid-template-columns: 35px repeat(7, 35px) 35px;
+        grid-template-rows: 30px repeat(7, 35px) 30px;
     }
     
     .grid {
-        grid-template-columns: repeat(7, 32px);
-        grid-template-rows: repeat(7, 32px);
+        grid-template-columns: repeat(7, 35px);
+        grid-template-rows: repeat(7, 35px);
     }
     
     .cell {
-        font-size: 12px;
+        font-size: 14px;
     }
     
     .row-target, .col-target {
-        font-size: 11px;
+        font-size: 12px;
     }
     
     .row-current, .col-current {
         font-size: 10px;
     }
     
+    button {
+        padding: 10px 12px;
+        font-size: 14px;
+        margin: 3px;
+    }
+    
     .difficulty-buttons {
-        gap: 5px;
+        gap: 6px;
     }
     
     .difficulty-btn {
-        padding: 5px 10px;
-        font-size: 11px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .difficulty-label {
+        font-size: 18px;
+    }
+    
+    .timer {
+        font-size: 16px;
+        padding: 8px 12px;
+    }
+    
+    .status {
+        font-size: 16px;
+    }
+    
+    .status.win {
+        font-size: 20px;
     }
 }
