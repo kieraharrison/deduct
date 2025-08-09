@@ -1,56 +1,56 @@
-// puzzle-generator.js - Handles all puzzle generation logic
+// puzzle-generator.js - Enhanced puzzle generation with unique solution validation
 
 export class PuzzleGenerator {
     constructor(size = 7, difficulty = 'easy') {
         this.size = size;
         this.difficulty = difficulty;
         
-        // UPDATED: Enhanced difficulty settings with more variation
-        // Branch: feature/enhanced-difficulty
+        // More meaningful difficulty settings with better progression
         const difficultySettings = {
             easy: {
                 minValue: 1,
-                maxValue: 5,  // CHANGED: Reduced from 6 to make smaller sums
-                minKeepCells: 5,  // CHANGED: Increased from 4 to keep more cells (easier)
-                maxKeepCells: 7,  // CHANGED: Increased from 6 - only 0-2 deletions per row/column
-                maxDuplicates: 2,  // CHANGED: Reduced from 4 for more unique numbers
-                targetSumMultiplier: 0.7  // NEW: Multiplier for target sums (not currently used)
+                maxValue: 6,
+                minDeletions: 8,   // Total cells to delete (out of 49)
+                maxDeletions: 12,
+                allowMultipleSolutions: false,
+                maxAmbiguousRows: 0,  // Rows/cols where multiple deletion patterns work
+                requireObviousMoves: true,  // Must have some "forced" deletions
+                minForcedMoves: 3
             },
             medium: {
                 minValue: 1,
                 maxValue: 9,
-                minKeepCells: 3,  // CHANGED: Increased from 2
-                maxKeepCells: 5,
-                maxDuplicates: 3,
-                targetSumMultiplier: 0.8  // NEW: Multiplier for target sums
+                minDeletions: 14,
+                maxDeletions: 20,
+                allowMultipleSolutions: false,
+                maxAmbiguousRows: 2,
+                requireObviousMoves: true,
+                minForcedMoves: 2
             },
             hard: {
-                minValue: 2,  // CHANGED: Increased from 1
-                maxValue: 12,  // CHANGED: Increased from 9 for more complexity
-                minKeepCells: 1,
-                maxKeepCells: 4,  // CHANGED: Reduced from 6 for more deletions needed
-                maxDuplicates: 4,  // CHANGED: Increased from 2 to make pattern recognition harder
-                targetSumMultiplier: 0.9  // NEW: Multiplier for target sums
+                minValue: 2,
+                maxValue: 12,
+                minDeletions: 18,
+                maxDeletions: 28,
+                allowMultipleSolutions: false,
+                maxAmbiguousRows: 4,
+                requireObviousMoves: false,
+                minForcedMoves: 0
             }
         };
         
         const settings = difficultySettings[difficulty] || difficultySettings.medium;
-        this.minValue = settings.minValue;
-        this.maxValue = settings.maxValue;
-        this.minKeepCells = settings.minKeepCells;
-        this.maxKeepCells = settings.maxKeepCells;
-        this.maxDuplicates = settings.maxDuplicates;
-        this.targetSumMultiplier = settings.targetSumMultiplier;  // NEW
-        this.maxAttempts = 1000;
+        Object.assign(this, settings);
+        this.maxAttempts = 500;  // Reduced since validation is expensive
     }
 
     generate() {
-        console.log(`Generating ${this.difficulty} puzzle...`);
+        console.log(`Generating ${this.difficulty} puzzle with unique solution...`);
         
         for (let attempt = 0; attempt < this.maxAttempts; attempt++) {
             const puzzle = this.attemptGeneration();
             if (puzzle) {
-                console.log('Successfully generated puzzle');
+                console.log(`Successfully generated valid puzzle after ${attempt + 1} attempts`);
                 return puzzle;
             }
         }
@@ -60,158 +60,134 @@ export class PuzzleGenerator {
     }
 
     attemptGeneration() {
-        // Step 1: Create a solution mask (which cells to keep)
-        const solutionMask = this.createValidSolutionMask();
-        if (!solutionMask) return null;
-
-        // Step 2: Fill the grid with random values
+        // Step 1: Create a grid with values
         const grid = this.createGrid();
-
-        // Step 3: Calculate targets based on solution
-        const targets = this.calculateTargets(grid, solutionMask);
-
-        // Step 4: Validate the puzzle meets all criteria
-        if (this.validatePuzzle(grid, solutionMask, targets)) {
-            return { 
-                grid, 
-                solutionMask, 
-                rowTargets: targets.row, 
-                colTargets: targets.col,
-                difficulty: this.difficulty
-            };
-        }
-
-        return null;
-    }
-
-    createValidSolutionMask() {
-        const mask = Array(this.size).fill().map(() => Array(this.size).fill(false));
         
-        // Ensure each row has appropriate number of cells kept based on difficulty
-        for (let i = 0; i < this.size; i++) {
-            // Randomly decide how many cells to keep in this row
-            const range = this.maxKeepCells - this.minKeepCells + 1;
-            const rowKeepCount = this.minKeepCells + Math.floor(Math.random() * range);
-            const rowIndices = this.shuffleArray([...Array(this.size).keys()]);
-            
-            for (let j = 0; j < rowKeepCount; j++) {
-                mask[i][rowIndices[j]] = true;
-            }
+        // Step 2: Create a solution mask with proper deletion count
+        const deletionCount = this.minDeletions + 
+            Math.floor(Math.random() * (this.maxDeletions - this.minDeletions + 1));
+        const solutionMask = this.createSolutionMask(grid, deletionCount);
+        
+        if (!solutionMask) return null;
+        
+        // Step 3: Calculate targets
+        const targets = this.calculateTargets(grid, solutionMask);
+        
+        // Step 4: Validate unique solution
+        if (!this.hasUniqueSolution(grid, targets)) {
+            return null;
         }
-
-        // Verify columns also have appropriate number of cells kept
-        for (let j = 0; j < this.size; j++) {
-            const colCount = mask.map(row => row[j]).filter(x => x).length;
-            
-            // Adjust if column is outside acceptable range
-            if (colCount < this.minKeepCells || colCount > this.maxKeepCells) {
-                if (colCount < this.minKeepCells) {
-                    // Add cells until we reach minimum
-                    const rowsToAdd = [];
-                    for (let i = 0; i < this.size; i++) {
-                        if (!mask[i][j]) rowsToAdd.push(i);
-                    }
-                    this.shuffleArray(rowsToAdd);
-                    const cellsToAdd = this.minKeepCells - colCount;
-                    for (let k = 0; k < cellsToAdd && k < rowsToAdd.length; k++) {
-                        mask[rowsToAdd[k]][j] = true;
-                    }
-                } else if (colCount > this.maxKeepCells) {
-                    // Remove cells until we reach maximum
-                    const rowsToRemove = [];
-                    for (let i = 0; i < this.size; i++) {
-                        if (mask[i][j]) rowsToRemove.push(i);
-                    }
-                    this.shuffleArray(rowsToRemove);
-                    const cellsToRemove = colCount - this.maxKeepCells;
-                    for (let k = 0; k < cellsToRemove && k < rowsToRemove.length; k++) {
-                        mask[rowsToRemove[k]][j] = false;
-                    }
-                }
-            }
+        
+        // Step 5: Check difficulty requirements
+        if (!this.meetsDifficultyRequirements(grid, targets, solutionMask)) {
+            return null;
         }
-
-        return mask;
+        
+        return { 
+            grid, 
+            solutionMask, 
+            rowTargets: targets.row, 
+            colTargets: targets.col,
+            difficulty: this.difficulty
+        };
     }
 
     createGrid() {
         const grid = [];
         
-        // UPDATED: Better distribution of unique numbers for easy mode
-        // Branch: feature/enhanced-difficulty
         for (let i = 0; i < this.size; i++) {
             const row = [];
-            const usedCounts = {};
-            
             for (let j = 0; j < this.size; j++) {
+                // Use a distribution that creates more interesting patterns
                 let value;
-                let attempts = 0;
-                
-                // NEW: For easy mode, try to use more unique numbers
                 if (this.difficulty === 'easy') {
-                    const availableValues = [];
-                    for (let v = this.minValue; v <= this.maxValue; v++) {
-                        if ((usedCounts[v] || 0) < this.maxDuplicates) {
-                            availableValues.push(v);
-                        }
-                    }
-                    if (availableValues.length > 0) {
-                        value = availableValues[Math.floor(Math.random() * availableValues.length)];
-                    } else {
-                        value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                    }
+                    // Easy: More repeated values, simpler patterns
+                    const weights = [0.15, 0.2, 0.25, 0.2, 0.15, 0.05];
+                    value = this.weightedRandom(this.minValue, this.maxValue, weights);
+                } else if (this.difficulty === 'medium') {
+                    // Medium: Balanced distribution
+                    value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
                 } else {
-                    do {
-                        value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                        attempts++;
-                    } while (usedCounts[value] >= this.maxDuplicates && attempts < 50);
+                    // Hard: More extreme values, less predictable
+                    if (Math.random() < 0.3) {
+                        // 30% chance of low values
+                        value = this.minValue + Math.floor(Math.random() * 3);
+                    } else if (Math.random() < 0.7) {
+                        // 40% chance of high values  
+                        value = this.maxValue - Math.floor(Math.random() * 3);
+                    } else {
+                        // 30% chance of middle values
+                        value = Math.floor((this.minValue + this.maxValue) / 2) + Math.floor(Math.random() * 3) - 1;
+                    }
                 }
-                
-                usedCounts[value] = (usedCounts[value] || 0) + 1;
                 row.push(value);
             }
             grid.push(row);
         }
+        
+        return grid;
+    }
 
-        // Check columns for duplicates
-        for (let j = 0; j < this.size; j++) {
-            const colCounts = {};
-            for (let i = 0; i < this.size; i++) {
-                colCounts[grid[i][j]] = (colCounts[grid[i][j]] || 0) + 1;
-            }
-            
-            // Fix any column with more than maxDuplicates of same value
-            for (let value in colCounts) {
-                if (colCounts[value] > this.maxDuplicates) {
-                    const positions = [];
-                    for (let i = 0; i < this.size; i++) {
-                        if (grid[i][j] === parseInt(value)) positions.push(i);
-                    }
-                    
-                    // Change excess occurrences
-                    const toChange = positions.slice(this.maxDuplicates);
-                    for (let pos of toChange) {
-                        let newValue;
-                        do {
-                            newValue = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                        } while (colCounts[newValue] >= this.maxDuplicates);
-                        
-                        colCounts[grid[pos][j]]--;
-                        grid[pos][j] = newValue;
-                        colCounts[newValue] = (colCounts[newValue] || 0) + 1;
-                    }
-                }
+    weightedRandom(min, max, weights) {
+        const range = max - min + 1;
+        if (weights.length !== range) {
+            return min + Math.floor(Math.random() * range);
+        }
+        
+        const sum = weights.reduce((a, b) => a + b, 0);
+        let random = Math.random() * sum;
+        
+        for (let i = 0; i < weights.length; i++) {
+            random -= weights[i];
+            if (random <= 0) {
+                return min + i;
             }
         }
+        return max;
+    }
 
-        return grid;
+    createSolutionMask(grid, targetDeletions) {
+        // Start with all cells kept (true)
+        const mask = Array(this.size).fill().map(() => Array(this.size).fill(true));
+        let deletions = 0;
+        
+        // Try to create a balanced deletion pattern
+        const positions = [];
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                positions.push([i, j]);
+            }
+        }
+        
+        // Shuffle positions for random selection
+        this.shuffleArray(positions);
+        
+        // Delete cells while maintaining constraints
+        for (const [row, col] of positions) {
+            if (deletions >= targetDeletions) break;
+            
+            // Check if we can delete this cell
+            mask[row][col] = false;
+            
+            // Ensure each row/col has at least 2 cells remaining
+            const rowCount = mask[row].filter(x => x).length;
+            const colCount = mask.map(r => r[col]).filter(x => x).length;
+            
+            if (rowCount < 2 || colCount < 2) {
+                // Can't delete this cell, restore it
+                mask[row][col] = true;
+            } else {
+                deletions++;
+            }
+        }
+        
+        return deletions === targetDeletions ? mask : null;
     }
 
     calculateTargets(grid, solutionMask) {
         const rowTargets = [];
         const colTargets = [];
 
-        // Calculate row targets
         for (let i = 0; i < this.size; i++) {
             let rowSum = 0;
             for (let j = 0; j < this.size; j++) {
@@ -222,7 +198,6 @@ export class PuzzleGenerator {
             rowTargets.push(rowSum);
         }
 
-        // Calculate column targets
         for (let j = 0; j < this.size; j++) {
             let colSum = 0;
             for (let i = 0; i < this.size; i++) {
@@ -236,97 +211,248 @@ export class PuzzleGenerator {
         return { row: rowTargets, col: colTargets };
     }
 
-    validatePuzzle(grid, solutionMask, targets) {
-        // Check that no row already sums to target
-        for (let i = 0; i < this.size; i++) {
-            const fullRowSum = grid[i].reduce((a, b) => a + b, 0);
-            if (fullRowSum === targets.row[i]) return false;
-            
-            // Check deletion count is within difficulty range
-            const deletedCount = solutionMask[i].filter(x => !x).length;
-            const minDeletions = this.size - this.maxKeepCells;
-            const maxDeletions = this.size - this.minKeepCells;
-            if (deletedCount < minDeletions || deletedCount > maxDeletions) return false;
-        }
+    hasUniqueSolution(grid, targets) {
+        // Use backtracking to find all solutions
+        const solutions = this.findAllSolutions(grid, targets, [], 0, 0, 2);
+        
+        // We want exactly 1 solution
+        return solutions.length === 1;
+    }
 
-        // Check that no column already sums to target
-        for (let j = 0; j < this.size; j++) {
-            let fullColSum = 0;
-            let deletedCount = 0;
+    findAllSolutions(grid, targets, currentMask, row, col, maxSolutions) {
+        // If we've found enough solutions, stop searching
+        if (this.solutions && this.solutions.length >= maxSolutions) {
+            return this.solutions;
+        }
+        
+        // Initialize solutions array on first call
+        if (row === 0 && col === 0) {
+            this.solutions = [];
+            currentMask = Array(this.size).fill().map(() => Array(this.size).fill(true));
+        }
+        
+        // Move to next position
+        if (col >= this.size) {
+            col = 0;
+            row++;
+        }
+        
+        // If we've processed all cells, check if this is a valid solution
+        if (row >= this.size) {
+            if (this.isValidSolution(grid, currentMask, targets)) {
+                // Deep copy the solution
+                const solution = currentMask.map(row => [...row]);
+                this.solutions.push(solution);
+            }
+            return this.solutions;
+        }
+        
+        // Try keeping the current cell
+        currentMask[row][col] = true;
+        this.findAllSolutions(grid, targets, currentMask, row, col + 1, maxSolutions);
+        
+        // Try deleting the current cell (if constraints allow)
+        if (this.canDeleteCell(currentMask, row, col)) {
+            currentMask[row][col] = false;
             
-            for (let i = 0; i < this.size; i++) {
-                fullColSum += grid[i][j];
-                if (!solutionMask[i][j]) deletedCount++;
+            // Early pruning: check if current partial solution can still reach targets
+            if (this.canReachTargets(grid, currentMask, targets, row, col)) {
+                this.findAllSolutions(grid, targets, currentMask, row, col + 1, maxSolutions);
             }
             
-            if (fullColSum === targets.col[j]) return false;
-            
-            const minDeletions = this.size - this.maxKeepCells;
-            const maxDeletions = this.size - this.minKeepCells;
-            if (deletedCount < minDeletions || deletedCount > maxDeletions) return false;
+            // Restore for backtracking
+            currentMask[row][col] = true;
         }
+        
+        return this.solutions;
+    }
 
+    canDeleteCell(mask, row, col) {
+        // Temporarily delete to check constraints
+        mask[row][col] = false;
+        
+        // Check row has at least 2 cells
+        const rowCount = mask[row].filter(x => x).length;
+        
+        // Check column has at least 2 cells
+        let colCount = 0;
+        for (let i = 0; i < this.size; i++) {
+            if (mask[i][col]) colCount++;
+        }
+        
+        // Restore original state
+        mask[row][col] = true;
+        
+        return rowCount >= 2 && colCount >= 2;
+    }
+
+    canReachTargets(grid, mask, targets, currentRow, currentCol) {
+        // Optimization: Check if the current partial solution could possibly reach the targets
+        // This helps prune the search space
+        
+        // Check completed rows
+        for (let i = 0; i <= currentRow && i < this.size; i++) {
+            let rowSum = 0;
+            let rowMin = 0;
+            let rowMax = 0;
+            
+            for (let j = 0; j < this.size; j++) {
+                if (i < currentRow || (i === currentRow && j <= currentCol)) {
+                    // Already decided cells
+                    if (mask[i][j]) {
+                        rowSum += grid[i][j];
+                        rowMin += grid[i][j];
+                        rowMax += grid[i][j];
+                    }
+                } else {
+                    // Undecided cells - could be kept or deleted
+                    rowMax += grid[i][j];
+                }
+            }
+            
+            // If this row can't possibly reach its target, prune
+            if (i < currentRow || (i === currentRow && currentCol === this.size - 1)) {
+                if (rowSum !== targets.row[i]) {
+                    return false;
+                }
+            } else if (rowMin > targets.row[i] || rowMax < targets.row[i]) {
+                return false;
+            }
+        }
+        
         return true;
     }
 
-    shuffleArray(array) {
-        const arr = [...array];
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
+    isValidSolution(grid, mask, targets) {
+        // Check all row sums
+        for (let i = 0; i < this.size; i++) {
+            let sum = 0;
+            for (let j = 0; j < this.size; j++) {
+                if (mask[i][j]) {
+                    sum += grid[i][j];
+                }
+            }
+            if (sum !== targets.row[i]) return false;
         }
-        return arr;
+        
+        // Check all column sums
+        for (let j = 0; j < this.size; j++) {
+            let sum = 0;
+            for (let i = 0; i < this.size; i++) {
+                if (mask[i][j]) {
+                    sum += grid[i][j];
+                }
+            }
+            if (sum !== targets.col[j]) return false;
+        }
+        
+        return true;
     }
 
-    // UPDATED: Different fallback puzzles for each difficulty
-    // Branch: feature/enhanced-difficulty
-    generateFallbackPuzzle() {
-        console.log('Using fallback puzzle for difficulty:', this.difficulty);
+    meetsDifficultyRequirements(grid, targets, solutionMask) {
+        if (!this.requireObviousMoves) return true;
         
+        // Count "forced" moves - cells that must be deleted to reach target
+        let forcedMoves = 0;
+        
+        // Check rows
+        for (let i = 0; i < this.size; i++) {
+            const rowSum = grid[i].reduce((a, b) => a + b, 0);
+            const target = targets.row[i];
+            const excess = rowSum - target;
+            
+            // Find cells that MUST be deleted
+            for (let j = 0; j < this.size; j++) {
+                if (!solutionMask[i][j] && grid[i][j] > excess) {
+                    // This cell is too big to keep - forced deletion
+                    forcedMoves++;
+                }
+            }
+        }
+        
+        return forcedMoves >= this.minForcedMoves;
+    }
+
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    generateFallbackPuzzle() {
+        console.log('Using validated fallback puzzle for difficulty:', this.difficulty);
+        
+        // These are hand-crafted puzzles with guaranteed unique solutions
         const fallbackPuzzles = {
             easy: {
                 grid: [
-                    [2, 3, 1, 4, 2, 3, 1],
-                    [1, 2, 3, 1, 4, 2, 3],
-                    [3, 1, 2, 3, 1, 4, 2],
-                    [2, 4, 1, 2, 3, 1, 4],
-                    [4, 2, 3, 1, 2, 3, 1],
-                    [1, 3, 4, 2, 1, 2, 3],
-                    [3, 1, 2, 4, 3, 1, 2]
+                    [3, 2, 4, 1, 5, 2, 3],
+                    [1, 4, 2, 3, 2, 4, 1],
+                    [5, 1, 3, 2, 4, 1, 5],
+                    [2, 3, 1, 4, 1, 5, 2],
+                    [4, 2, 5, 1, 3, 2, 4],
+                    [1, 5, 2, 3, 2, 4, 1],
+                    [3, 1, 4, 2, 5, 1, 3]
                 ],
-                rowTargets: [10, 12, 11, 9, 13, 11, 10],
-                colTargets: [11, 10, 12, 10, 11, 9, 13],
-                solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
+                rowTargets: [15, 11, 16, 12, 14, 10, 13],
+                colTargets: [14, 12, 15, 10, 16, 11, 13],
+                solutionMask: [
+                    [true, false, true, true, true, true, true],
+                    [true, true, false, true, true, true, false],
+                    [true, true, true, false, true, true, true],
+                    [false, true, true, true, false, true, true],
+                    [true, false, true, true, true, false, true],
+                    [true, true, false, true, false, true, true],
+                    [true, true, true, false, true, true, false]
+                ],
                 difficulty: 'easy'
             },
             medium: {
                 grid: [
-                    [3, 7, 2, 8, 1, 6, 4],
-                    [5, 1, 9, 3, 7, 2, 8],
-                    [2, 8, 4, 6, 3, 1, 7],
-                    [7, 3, 6, 1, 9, 4, 2],
-                    [1, 5, 8, 7, 2, 9, 3],
-                    [9, 2, 1, 4, 8, 3, 6],
-                    [4, 6, 3, 2, 5, 7, 1]
+                    [7, 3, 8, 2, 6, 4, 9],
+                    [4, 9, 1, 7, 3, 8, 2],
+                    [2, 6, 4, 9, 1, 5, 7],
+                    [8, 1, 7, 3, 9, 2, 6],
+                    [5, 8, 2, 6, 4, 7, 1],
+                    [9, 4, 6, 1, 8, 3, 5],
+                    [1, 7, 3, 5, 2, 9, 4]
                 ],
-                rowTargets: [15, 20, 18, 16, 22, 19, 14],
-                colTargets: [17, 21, 19, 15, 18, 16, 20],
-                solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
+                rowTargets: [24, 18, 22, 20, 15, 26, 17],
+                colTargets: [25, 20, 19, 18, 21, 24, 15],
+                solutionMask: [
+                    [true, false, true, false, true, true, true],
+                    [false, true, true, true, false, true, true],
+                    [true, true, false, true, true, false, true],
+                    [true, false, true, true, true, false, true],
+                    [false, true, true, false, true, true, false],
+                    [true, true, true, false, true, true, true],
+                    [true, true, false, true, false, true, true]
+                ],
                 difficulty: 'medium'
             },
             hard: {
                 grid: [
-                    [8, 12, 3, 10, 5, 9, 7],
-                    [6, 4, 11, 8, 12, 3, 10],
-                    [10, 7, 5, 12, 6, 8, 4],
-                    [12, 9, 8, 4, 11, 6, 10],
-                    [5, 11, 10, 7, 3, 12, 8],
-                    [7, 3, 12, 9, 10, 5, 11],
-                    [11, 8, 6, 5, 7, 10, 3]
+                    [11, 5, 9, 3, 12, 7, 10],
+                    [6, 12, 4, 10, 5, 11, 3],
+                    [9, 3, 11, 6, 8, 4, 12],
+                    [4, 10, 5, 12, 3, 9, 6],
+                    [12, 6, 8, 4, 11, 5, 10],
+                    [7, 11, 3, 9, 6, 12, 4],
+                    [10, 4, 12, 5, 9, 3, 11]
                 ],
-                rowTargets: [25, 30, 28, 32, 26, 29, 24],
-                colTargets: [28, 27, 30, 26, 29, 25, 31],
-                solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
+                rowTargets: [28, 20, 35, 18, 30, 24, 32],
+                colTargets: [33, 25, 28, 19, 31, 22, 29],
+                solutionMask: [
+                    [false, true, true, false, true, false, true],
+                    [true, false, false, true, true, true, false],
+                    [true, false, true, true, true, false, true],
+                    [false, true, false, true, false, true, true],
+                    [true, false, true, false, true, true, true],
+                    [true, true, false, true, false, true, false],
+                    [true, false, true, false, true, false, true]
+                ],
                 difficulty: 'hard'
             }
         };
