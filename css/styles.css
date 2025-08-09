@@ -4,14 +4,14 @@
 /* Root Variables/Theme */
 /* ==================== */
 :root {
---bg: #FDF9F5;
---primary: #6482fc;
---accent: #fbb45c;
---light: #bfc0f3;
---whiteish: #f3eded;
---text-dark: #1F1D1D;
---text-light: #FFF6EB;
---border: #D7C2B0;
+    --bg: #FDF9F5;
+    --primary: #6482fc;
+    --accent: #fbb45c;
+    --light: #bfc0f3;
+    --whiteish: #f3eded;
+    --text-dark: #1F1D1D;
+    --text-light: #FFF6EB;
+    --border: #D7C2B0;
 }
 
 /* ==================== */
@@ -104,7 +104,6 @@ h1 {
     -webkit-tap-highlight-color: transparent;
 }
 
-
 .cell.deleted {
     background-color: #D3D3D3;
     color: #495057;
@@ -117,7 +116,6 @@ h1 {
     box-sizing: border-box;
     box-shadow: 0 2px 4px var(--light);
 }
-
 
 /* ==================== */
 /* Target Cells         */
@@ -247,7 +245,6 @@ button:hover {
     margin-bottom: 8px;
 }
 
-
 /* ==================== */
 /* Timer & Status       */
 /* ==================== */
@@ -357,6 +354,175 @@ input:checked + .toggle-slider:before {
     font-weight: 400;
 }
 
+/* ====================== */
+/* Modal Styles - NEW     */
+/* Branch: feature/modals */
+/* ====================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-overlay.active .modal {
+    transform: scale(1);
+}
+
+.modal h2 {
+    color: var(--primary);
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.modal p {
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.difficulty-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.difficulty-selection button {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.difficulty-selection button.easy {
+    background-color: #90EE90;
+    color: var(--text-dark);
+}
+
+.difficulty-selection button.easy:hover {
+    background-color: #7dd67d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(144, 238, 144, 0.3);
+}
+
+.difficulty-selection button.medium {
+    background-color: #FFD700;
+    color: var(--text-dark);
+}
+
+.difficulty-selection button.medium:hover {
+    background-color: #e6c200;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.difficulty-selection button.hard {
+    background-color: #FFA07A;
+    color: var(--text-dark);
+}
+
+.difficulty-selection button.hard:hover {
+    background-color: #ff8c61;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 160, 122, 0.3);
+}
+
+/* ======================== */
+/* Win Modal - NEW          */
+/* Branch: feature/win-modal */
+/* ======================== */
+.win-modal .modal {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.win-modal h2 {
+    color: white;
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.win-modal p {
+    color: white;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.win-modal .time-display {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 20px 0;
+    color: var(--accent);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.win-modal button {
+    margin: 5px;
+    background-color: white;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.win-modal button:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+/* ========================== */
+/* Confetti Animation - NEW   */
+/* Branch: feature/confetti   */
+/* ========================== */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent);
+    animation: confetti-fall 3s linear;
+    pointer-events: none;
+    z-index: 999;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
 /* ==================== */
 /* Animations           */
 /* ==================== */
@@ -452,15 +618,15 @@ input:checked + .toggle-slider:before {
     }
     
     .difficulty-btn {
-      padding: 8px 16px;
-      font-size: 14px;
-      font-family: 'Source Sans Pro', sans-serif;
-      font-weight: 600;
-      border-radius: 5px;
-      background-color: #E5E4E2;
-      color: black;
-      cursor: pointer;
-      transition: all 0.2s;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-weight: 600;
+        border-radius: 5px;
+        background-color: #E5E4E2;
+        color: black;
+        cursor: pointer;
+        transition: all 0.2s;
     }
 
     .difficulty-btn:hover {
@@ -472,7 +638,6 @@ input:checked + .toggle-slider:before {
         background-color: #848884;
         color: #f3eded;
     }
-    
     
     .difficulty-label {
         font-size: 20px;
@@ -505,6 +670,37 @@ input:checked + .toggle-slider:before {
     
     .toggle-label {
         font-size: 15px;
+    }
+    
+    /* Modal responsive styles */
+    .modal {
+        padding: 20px;
+        max-width: 90%;
+    }
+    
+    .modal h2 {
+        font-size: 24px;
+    }
+    
+    .modal p {
+        font-size: 14px;
+    }
+    
+    .difficulty-selection button {
+        padding: 10px;
+        font-size: 16px;
+    }
+    
+    .win-modal h2 {
+        font-size: 28px;
+    }
+    
+    .win-modal p {
+        font-size: 18px;
+    }
+    
+    .win-modal .time-display {
+        font-size: 28px;
     }
 }
 
@@ -575,5 +771,37 @@ input:checked + .toggle-slider:before {
     
     .status.win {
         font-size: 20px;
+    }
+    
+    /* Modal extra small styles */
+    .modal {
+        padding: 15px;
+    }
+    
+    .modal h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .modal p {
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+    
+    .difficulty-selection button {
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    .win-modal h2 {
+        font-size: 24px;
+    }
+    
+    .win-modal p {
+        font-size: 16px;
+    }
+    
+    .win-modal .time-display {
+        font-size: 24px;
     }
 }
