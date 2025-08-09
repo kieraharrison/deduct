@@ -418,6 +418,16 @@ input:checked + .toggle-slider:before {
     line-height: 1.5;
 }
 
+/* Hide grid when welcome modal is active */
+.modal-overlay.active ~ .game-container .grid-container {
+    visibility: hidden;
+}
+
+/* Alternative approach - hide entire game container content except title */
+.modal-overlay.active ~ .game-container > *:not(h1) {
+    visibility: hidden;
+}
+
 .difficulty-selection {
     display: flex;
     flex-direction: column;
