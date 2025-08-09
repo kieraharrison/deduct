@@ -343,14 +343,19 @@ class DeductGame {
 }
 
 // Initialize game when DOM is ready - FIX: Only initialize once
-if (document.readyState === 'loading') {
-    console.log('Document still loading, waiting for DOMContentLoaded...');
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM loaded, initializing game...');
+// Use a flag to prevent double initialization
+if (!window.gameInitialized) {
+    window.gameInitialized = true;
+    
+    if (document.readyState === 'loading') {
+        console.log('Document still loading, waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing game...');
+            window.game = new DeductGame();
+        });
+    } else {
+        // DOM already loaded
+        console.log('DOM already loaded, initializing game immediately...');
         window.game = new DeductGame();
-    });
-} else {
-    // DOM already loaded
-    console.log('DOM already loaded, initializing game immediately...');
-    window.game = new DeductGame();
+    }
 }
