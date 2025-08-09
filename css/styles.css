@@ -269,7 +269,6 @@ button:hover {
 
 .timer.paused {
     opacity: 0.6;
-    color: var(--accent);
 }
 
 .status {
@@ -623,10 +622,7 @@ body.modal-open {
         font-size: 14px;
         font-family: 'Source Sans Pro', sans-serif;
         font-weight: 600;
-        border: 2px solid #848884;
         border-radius: 5px;
-        background-color: #f3eded;
-        color: black;
         cursor: pointer;
         margin: 0 10px;
         transition: all 0.2s;
