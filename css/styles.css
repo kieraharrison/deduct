@@ -28,13 +28,13 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: white;
+    background-color: #f3eded;
     padding: 10px;
 }
 
 .game-container {
     text-align: center;
-    background: white;
+    background: #f3eded;
     padding: 30px;
     border-radius: 15px;
     max-width: 600px;
@@ -71,7 +71,7 @@ h1 {
     grid-template-columns: 60px repeat(7, 50px) 60px;
     grid-template-rows: 40px repeat(7, 50px) 40px;
     gap: 0;
-    background-color: white;
+    background-color: #f3eded;
 }
 
 .grid {
@@ -91,7 +91,7 @@ h1 {
 /* Cell States          */
 /* ==================== */
 .cell {
-    background-color: white;
+    background-color: #f3eded;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -105,14 +105,14 @@ h1 {
 }
 
 .cell.deleted {
-    background-color: #E9ECEF;
+    background-color: #D3D3D3;
     color: #495057;
-    border: 1px white;
+    border: 1px #f3eded;
 }
 
 .cell.confirmed {
-    background-color: #c5decb;
-    border: 1px white;
+    background-color: #bfc0f3;
+    border: 1px #f3eded;
     box-sizing: border-box;
     box-shadow: 0 2px 4px rgba(127, 166, 136, 0.3);
 }
@@ -120,9 +120,22 @@ h1 {
 /* ==================== */
 /* Target Cells         */
 /* ==================== */
+.targets {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+.row-targets, .col-targets {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 .row-target {
     grid-column: 1;
-    background-color: white;
+    background-color: #f3eded;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,30 +144,21 @@ h1 {
     color: var(--text-dark);
 }
 
-.row-target.over-target {
-    color: var(--secondary);
-    font-weight: 700;
-}
 
 .col-target {
     grid-row: 1;
-    background-color: white;
+    background-color: #f3eded;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 14px;
     color: var(--text-dark);
-}
-
-.col-target.over-target {
-    color: var(--secondary);
-    font-weight: 700;
 }
 
 .row-current {
     grid-column: 9;
-    background-color: white;
+    background-color: #f3eded;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,7 +169,7 @@ h1 {
 
 .col-current {
     grid-row: 9;
-    background-color: white;
+    background-color: #f3eded;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -180,13 +184,13 @@ h1 {
     background-color: var(--primary) !important;
     color: var(--light) !important;
     border-radius: 6px;
-    box-shadow: 0px 0px 0px 3px white inset;
+    box-shadow: 0px 0px 0px 3px #f3eded inset;
 }
 
 .row-current.complete, 
 .col-current.complete {
-    background-color: white !important;
-    color: white !important;
+    background-color: #f3eded !important;
+    color: #f3eded !important;
 }
 
 /* ==================== */
@@ -211,7 +215,7 @@ button {
 }
 
 button:hover {
-    background-color: var(--accent);
+    background-color: var(--primary);
     transform: translateY(-1px);
 }
 
@@ -231,19 +235,20 @@ button:hover {
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 300;
     border-radius: 8px;
-    background-color: #BC804D;
-    color: white;
+    background-color: #E5E4E2;
+    color: black;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .difficulty-btn:hover {
-    background-color: var(--secondary);
+    background-color: #848884;
+    color: #f3eded;
 }
 
 .difficulty-btn.active {
-    background-color: var(--secondary);
-    color: white;
+    background-color: #848884;
+    color: #f3eded;
 }
 
 .difficulty-label {
@@ -261,7 +266,7 @@ button:hover {
     font-size: 18px;
     font-weight: 600;
     color: black;
-    background-color: white;
+    background-color: #f3eded;
     padding: 8px 16px;
     border-radius: 8px;
     display: inline-block;
@@ -296,7 +301,7 @@ button:hover {
 .puzzle-info {
     margin-bottom: 10px;
     font-size: 12px;
-    color: white;
+    color: #f3eded;
     font-style: italic;
 }
 
@@ -342,7 +347,7 @@ button:hover {
     width: 18px;
     left: 3px;
     bottom: 3px;
-    background-color: white;
+    background-color: #f3eded;
     transition: 0.3s;
     border-radius: 50%;
 }
