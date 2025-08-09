@@ -1,1213 +1,564 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>deduct</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
-        
-            :root {
-        --bg: #FDF9F5;
-        --primary: #6482fc;
-        --accent: #fbb45c;
-        --light: #bfc0f3;
-        --whiteish: #f3eded;
-        --text-dark: #1F1D1D;
-        --text-light: #FFF6EB;
-        --border: #D7C2B0;
-          }
-      
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Source Sans Pro', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f3eded;
-            padding: 10px;
-        }
-
-        .game-container {
-            text-align: center;
-            background: #f3eded;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 100%;
-        }
-
-        h1 {
-            color: 
-#6482fc;
-            margin-bottom: 20px;
-            font-weight: 100;
-            font-size: 150px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .instructions {
-            color: #1f1d1d;
-            margin-bottom: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .grid-container {
-            display: inline-block;
-            position: relative;
-            overflow-x: auto;
-            max-width: 100%;
-        }
-
-        .grid-wrapper {
-            display: grid;
-            grid-template-columns: 60px repeat(7, 50px) 60px;
-            grid-template-rows: 40px repeat(7, 50px) 40px;
-            gap: 0;
-            background-color: #f3eded;
-        }
-
-        .grid {
-            grid-column: 2 / 9;
-            grid-row: 2 / 9;
-            display: grid;
-            grid-template-columns: repeat(7, 50px);
-            grid-template-rows: repeat(7, 50px);
-            gap: 1px;
-            background-color: black;
-            outline: 1px solid black;
-            outline-offset: -1px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .cell {
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            font-weight: 400;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-            color: #1f1d1d;
-            -webkit-tap-highlight-color: transparent;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            user-select: none;
-            color: var(--text-dark);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .cell:hover {
-            font-weight: 600;
-        }
-
-        .cell.deleted {
-            background-color: #D3D3D3;
-            color: #495057;
-            border: 1px #f3eded;
-        }
-      
-       .cell.deleted:hover {
-            background-color: #A9A9A9;
-        }
-      
-       .cell.confirmed {
-            background-color: #bfc0f3;
-            border: 1px #f3eded;
-            box-sizing: border-box;
-            box-shadow: 0 2px 4px rgba(127, 166, 136, 0.3);
-        }
-
-        .cell.confirmed:hover {
-            background-color: #6482fc;
-        }
-      
-      
-        @keyframes winPulse {
-            0%, 100% { 
-                background-color: var(--success);
-                transform: scale(1);
-            }
-            50% { 
-                background-color: #6BC76F;
-                transform: scale(1.1);
-            }
-        }
-
-        .cell.win-animation {
-            animation: winPulse 0.6s ease-in-out;
-        }
-
-        /* Mobile responsive styles */
-        @media (max-width: 600px) {
-            .game-container {
-                padding: 15px;
-                border-radius: 10px;
-            }
-            
-            h1 {
-                font-size: 1.5em;
-                margin-bottom: 15px;
-            }
-            
-            .instructions {
-                font-size: 12px;
-                margin-bottom: 15px;
-                padding: 0 10px;
-            }
-            
-            .grid-wrapper {
-                grid-template-columns: 40px repeat(7, 38px) 40px;
-                grid-template-rows: 30px repeat(7, 38px) 30px;
-                margin: 0 auto;
-            }
-            
-            .grid {
-                grid-template-columns: repeat(7, 38px);
-                grid-template-rows: repeat(7, 38px);
-                outline: 2px solid black;
-            }
-            
-            .cell {
-                font-size: 14px;
-            }
-            
-            .row-target, .col-target {
-                font-size: 12px;
-            }
-            
-            .row-current, .col-current {
-                font-size: 11px;
-            }
-            
-            button {
-                padding: 8px 15px;
-                font-size: 14px;
-                margin: 0 5px;
-                background-color: #BC804D;
-            }
-            
-            .difficulty-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-                background-color: #BC804D;
-            }
-            
-            .timer {
-                font-size: 16px;
-                padding: 6px 12px;
-            }
-            
-            .status {
-                font-size: 16px;
-            }
-            
-            .controls {
-                margin-top: 15px;
-            }
-        }
-        
-        /* Extra small mobile screens */
-        @media (max-width: 380px) {
-            .grid-wrapper {
-                grid-template-columns: 35px repeat(7, 32px) 35px;
-                grid-template-rows: 28px repeat(7, 32px) 28px;
-            }
-            
-            .grid {
-                grid-template-columns: repeat(7, 32px);
-                grid-template-rows: repeat(7, 32px);
-            }
-            
-            .cell {
-                font-size: 12px;
-            }
-            
-            .row-target, .col-target {
-                font-size: 11px;
-            }
-            
-            .row-current, .col-current {
-                font-size: 10px;
-            }
-            
-            .difficulty-buttons {
-                gap: 5px;
-            }
-            
-            .difficulty-btn {
-                padding: 5px 10px;
-                font-size: 11px;
-            }
-        }
-
-        .targets {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            gap: 20px;
-        }
-
-        .row-targets, .col-targets {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .row-target {
-            grid-column: 1;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            color: #1f1d1d;
-        }
-      
-       .row-target.over-target {
-            background-color: #fbb45c;
-        }
-
-        .col-target {
-            grid-row: 1;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            color: #1f1d1d;
-        }
-      
-       .col-target.over-target {
-             background-color: #fbb45c;
-        }
-
-        .row-current {
-            grid-column: 9;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 400;
-            font-size: 12px;
-            color: #1f1d1d;
-        }
-
-        .col-current {
-            grid-row: 9;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 400;
-            font-size: 12px;
-            color: #1f1d1d;
-        }
-
-        .corner-cell {
-            grid-column: 1;
-            grid-row: 1;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #9D442A;
-            font-weight: 600;
-        }
-
-        .corner-current {
-            grid-column: 9;
-            grid-row: 9;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: #9D442A;
-            font-weight: 400;
-        }
-      
-        .corner-top-right {
-            grid-column: 9;
-            grid-row: 1;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: 
-#6482fc;
-         }
-
-        .corner-bottom-left {
-            grid-column: 1;
-            grid-row: 9;
-            background-color: #f3eded;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #FFF6EB;
-        }
-
-        .target.complete, .row-target.complete, .col-target.complete {
-            background-color: 
-#6482fc !important;
-            color: #FFF6EB !important;
-            border-radius: 6px;
-            box-shadow:0px 0px 0px 3px #f3eded inset;
-        }
-      
-        .row-current.complete, .col-current.complete {
-            background-color: #f3eded !important;
-            color: #f3eded !important;
-        }
-
-        .controls {
-            margin-top: 20px;
-        }
-
-        button {
-            padding: 10px 10px;
-            font-size: 14px;
-            font-family: 'Source Sans Pro', sans-serif;
-            font-weight: 600;
-            border: 2px; 
-            border-color: #848884;
-            border-radius: 5px;
-            background-color: #f3eded;
-            color: black;
-            cursor: pointer;
-            margin: 0 10px;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            color: 
-#6482fc;
-            transform: translateY(-1px);
-        }
-
-        .difficulty-container {
-            margin: 15px 0;
-        }
-
-        .difficulty-buttons {
-            display: inline-flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .difficulty-btn {
-            padding: 8px 16px;
-            font-size: 14px;
-            font-family: 'Source Sans Pro', sans-serif;
-            font-weight: 600;
-            border-radius: 5px;
-            background-color: #E5E4E2;
-            color: black;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .difficulty-btn:hover {
-            background-color: #848884;
-            color: #f3eded;
-        }
-
-        .difficulty-btn.active {
-            background-color: #848884;
-            color: #f3eded;
-        }
-
-        .difficulty-label {
-            font-size: 24px;
-            color: #1f1d1d;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .status {
-            margin-top: 15px;
-            font-size: 18px;
-            font-weight: 600;
-            min-height: 25px;
-            color: #1f1d1d;
-        }
-      
-      .timer {
-            font-size: 18px;
-            font-weight: 600;
-            color: black;
-            background-color: #f3eded;
-            border-radius: 8px;
-            display: inline-block;
-            min-width: 80px;
-        }
-
-        .timer.completed {
-            background-color: #9D442A;
-            color: #FFF6EB;
-            border-color: #9D442A;
-        }
-
-        .status.win {
-            color: 
-#6482fc;
-            font-size: 24px;
-            animation: winPulse 1s ease-in-out;
-        }
-
-        .puzzle-info {
-            margin-bottom: 10px;
-            font-size: 12px;
-            color: #f3eded;
-            font-style: italic;
-        }
-      
-      .guides-toggle {
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            border-radius: 7px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 24px;
-            cursor: pointer;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 7px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: #f3eded;
-            transition: 0.3s;
-            border-radius: 7px;
-        }
-
-        input:checked + .toggle-slider {
-            background-color: #bfc0f3
-;
-        }
-
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
-            background-color: 
-#6482fc;
-        }
-
-        .toggle-label {
-            font-size: 14px;
-            color: #1f1d1d;
-            font-weight: 400;
-        }
-      
-      
-    </style>
-</head>
-<body>
-    <div class="game-container">
-        <h1>deduct</h1>
-      
-      <div class="timer" id="gameTimer">00:00</div>
-      <div class="puzzle-info" id="puzzleInfo">Loading puzzle...</div>
-
-              
-        <div class="grid-container">
-            <div class="grid-wrapper" id="gridWrapper">
-                <div class="grid" id="gameGrid"></div>
-            </div>
-        </div>
-        
-        <div class="targets" style="display: none;">
-            <div>
-                <h3>Row Targets</h3>
-                <div class="row-targets" id="rowTargets"></div>
-            </div>
-            <div>
-                <h3>Column Targets</h3>
-                <div class="col-targets" id="colTargets"></div>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <span class="toggle-label">Start new game:</span>
-            <button class="difficulty-btn" onclick="setDifficulty('easy')">Easy</button>
-            <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
-            <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
-           <br><br>
-            <button onclick="resetPuzzle()"> &#x21BB Restart Current Game</button>
-        </div>
-     
-         
-      <br><br>
-         <div class="instructions">
-           <b>How to play:</b> Select boxes to delete the numbers. Click once to delete and twice to take a note the cell must stay on the grid. Make each row and column sum to the target values!
-           
-    </div>
-
-      <div class="guides-toggle">
-          <span class="toggle-label">Keep tally of how much is left to deduct:</span>
-          <label class="toggle-switch">
-              <input type="checkbox" id="guidesToggle" checked onchange="toggleGuides()">
-              <span class="toggle-slider"></span>
-          </label>
-      </div>
-      
-    <script>
-        // Game state
-        let gameState = {
-            grid: [],
-            deleted: [],
-            confirmed: [],
-            rowTargets: [],
-            colTargets: [],
-            size: 7,
-            startTime: null,
-            timerInterval: null,
-            gameCompleted: false,
-            currentPuzzle: null,
-            solutionMask: null,
-            difficulty: 'easy', 
-            showGuides: true
-        };
-
-        // New puzzle generator class with difficulty support
-        class SumpleteGenerator {
-            constructor(size = 7, difficulty = 'easy') {
-                this.size = size;
-                this.difficulty = difficulty;
-                
-                // Adjust parameters based on difficulty
-                const difficultySettings = {
-                    easy: {
-                        minValue: 1,
-                        maxValue: 6,
-                        minKeepCells: 4,  // More cells kept (fewer deletions needed)
-                        maxKeepCells: 6,  // 1-3 deletions per row/column
-                        maxDuplicates: 4  // Allow more duplicates for easier patterns
-                    },
-                    medium: {
-                        minValue: 1,
-                        maxValue: 9,
-                        minKeepCells: 2,  // 2-5 deletions per row/column
-                        maxKeepCells: 5,
-                        maxDuplicates: 3
-                    },
-                    hard: {
-                        minValue: 1,
-                        maxValue: 9,
-                        minKeepCells: 1,  // 1-6 deletions per row/column
-                        maxKeepCells: 6,
-                        maxDuplicates: 2  // Fewer duplicates for more complexity
-                    }
-                };
-                
-                const settings = difficultySettings[difficulty] || difficultySettings.medium;
-                this.minValue = settings.minValue;
-                this.maxValue = settings.maxValue;
-                this.minKeepCells = settings.minKeepCells;
-                this.maxKeepCells = settings.maxKeepCells;
-                this.maxDuplicates = settings.maxDuplicates;
-                this.maxAttempts = 1000;
-            }
-
-            generate() {
-                console.log(`Generating ${this.difficulty} puzzle...`);
-                for (let attempt = 0; attempt < this.maxAttempts; attempt++) {
-                    const puzzle = this.attemptGeneration();
-                    if (puzzle) return puzzle;
-                }
-                console.log("Could not generate valid puzzle, using fallback");
-                return this.generateFallbackPuzzle();
-            }
-
-            attemptGeneration() {
-                // Step 1: Create a solution mask (which cells to keep)
-                const solutionMask = this.createValidSolutionMask();
-                if (!solutionMask) return null;
-
-                // Step 2: Fill the grid with random values
-                const grid = this.createGrid();
-
-                // Step 3: Calculate targets based on solution
-                const targets = this.calculateTargets(grid, solutionMask);
-
-                // Step 4: Validate the puzzle meets all criteria
-                if (this.validatePuzzle(grid, solutionMask, targets)) {
-                    return { 
-                        grid, 
-                        solutionMask, 
-                        rowTargets: targets.row, 
-                        colTargets: targets.col,
-                        difficulty: this.difficulty
-                    };
-                }
-
-                return null;
-            }
-
-            createValidSolutionMask() {
-                const mask = Array(this.size).fill().map(() => Array(this.size).fill(false));
-                
-                // Ensure each row has appropriate number of cells kept based on difficulty
-                for (let i = 0; i < this.size; i++) {
-                    // Randomly decide how many cells to keep in this row
-                    const range = this.maxKeepCells - this.minKeepCells + 1;
-                    const rowKeepCount = this.minKeepCells + Math.floor(Math.random() * range);
-                    const rowIndices = this.shuffleArray([...Array(this.size).keys()]);
-                    for (let j = 0; j < rowKeepCount; j++) {
-                        mask[i][rowIndices[j]] = true;
-                    }
-                }
-
-                // Verify columns also have appropriate number of cells kept
-                for (let j = 0; j < this.size; j++) {
-                    const colCount = mask.map(row => row[j]).filter(x => x).length;
-                    
-                    // Adjust if column is outside acceptable range
-                    if (colCount < this.minKeepCells || colCount > this.maxKeepCells) {
-                        if (colCount < this.minKeepCells) {
-                            // Add cells until we reach minimum
-                            const rowsToAdd = [];
-                            for (let i = 0; i < this.size; i++) {
-                                if (!mask[i][j]) rowsToAdd.push(i);
-                            }
-                            this.shuffleArray(rowsToAdd);
-                            const cellsToAdd = this.minKeepCells - colCount;
-                            for (let k = 0; k < cellsToAdd && k < rowsToAdd.length; k++) {
-                                mask[rowsToAdd[k]][j] = true;
-                            }
-                        } else if (colCount > this.maxKeepCells) {
-                            // Remove cells until we reach maximum
-                            const rowsToRemove = [];
-                            for (let i = 0; i < this.size; i++) {
-                                if (mask[i][j]) rowsToRemove.push(i);
-                            }
-                            this.shuffleArray(rowsToRemove);
-                            const cellsToRemove = colCount - this.maxKeepCells;
-                            for (let k = 0; k < cellsToRemove && k < rowsToRemove.length; k++) {
-                                mask[rowsToRemove[k]][j] = false;
-                            }
-                        }
-                    }
-                }
-
-                return mask;
-            }
-
-            createGrid() {
-                const grid = [];
-                for (let i = 0; i < this.size; i++) {
-                    const row = [];
-                    const usedCounts = {};
-                    
-                    for (let j = 0; j < this.size; j++) {
-                        let value;
-                        let attempts = 0;
-                        
-                        do {
-                            value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                            attempts++;
-                        } while (usedCounts[value] >= this.maxDuplicates && attempts < 50);
-                        
-                        usedCounts[value] = (usedCounts[value] || 0) + 1;
-                        row.push(value);
-                    }
-                    grid.push(row);
-                }
-
-                // Check columns for duplicates
-                for (let j = 0; j < this.size; j++) {
-                    const colCounts = {};
-                    for (let i = 0; i < this.size; i++) {
-                        colCounts[grid[i][j]] = (colCounts[grid[i][j]] || 0) + 1;
-                    }
-                    
-                    // Fix any column with more than maxDuplicates of same value
-                    for (let value in colCounts) {
-                        if (colCounts[value] > this.maxDuplicates) {
-                            const positions = [];
-                            for (let i = 0; i < this.size; i++) {
-                                if (grid[i][j] === parseInt(value)) positions.push(i);
-                            }
-                            
-                            // Change excess occurrences
-                            const toChange = positions.slice(this.maxDuplicates);
-                            for (let pos of toChange) {
-                                let newValue;
-                                do {
-                                    newValue = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                                } while (colCounts[newValue] >= this.maxDuplicates);
-                                
-                                colCounts[grid[pos][j]]--;
-                                grid[pos][j] = newValue;
-                                colCounts[newValue] = (colCounts[newValue] || 0) + 1;
-                            }
-                        }
-                    }
-                }
-
-                return grid;
-            }
-
-            calculateTargets(grid, solutionMask) {
-                const rowTargets = [];
-                const colTargets = [];
-
-                for (let i = 0; i < this.size; i++) {
-                    let rowSum = 0;
-                    for (let j = 0; j < this.size; j++) {
-                        if (solutionMask[i][j]) {
-                            rowSum += grid[i][j];
-                        }
-                    }
-                    rowTargets.push(rowSum);
-                }
-
-                for (let j = 0; j < this.size; j++) {
-                    let colSum = 0;
-                    for (let i = 0; i < this.size; i++) {
-                        if (solutionMask[i][j]) {
-                            colSum += grid[i][j];
-                        }
-                    }
-                    colTargets.push(colSum);
-                }
-
-                return { row: rowTargets, col: colTargets };
-            }
-
-            validatePuzzle(grid, solutionMask, targets) {
-                // Check that no row already sums to target
-                for (let i = 0; i < this.size; i++) {
-                    const fullRowSum = grid[i].reduce((a, b) => a + b, 0);
-                    if (fullRowSum === targets.row[i]) return false;
-                    
-                    // Check deletion count is within difficulty range
-                    const deletedCount = solutionMask[i].filter(x => !x).length;
-                    const minDeletions = this.size - this.maxKeepCells;
-                    const maxDeletions = this.size - this.minKeepCells;
-                    if (deletedCount < minDeletions || deletedCount > maxDeletions) return false;
-                }
-
-                // Check that no column already sums to target
-                for (let j = 0; j < this.size; j++) {
-                    let fullColSum = 0;
-                    let deletedCount = 0;
-                    
-                    for (let i = 0; i < this.size; i++) {
-                        fullColSum += grid[i][j];
-                        if (!solutionMask[i][j]) deletedCount++;
-                    }
-                    
-                    if (fullColSum === targets.col[j]) return false;
-                    const minDeletions = this.size - this.maxKeepCells;
-                    const maxDeletions = this.size - this.minKeepCells;
-                    if (deletedCount < minDeletions || deletedCount > maxDeletions) return false;
-                }
-
-                return true;
-            }
-
-            shuffleArray(array) {
-                const arr = [...array];
-                for (let i = arr.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [arr[i], arr[j]] = [arr[j], arr[i]];
-                }
-                return arr;
-            }
-
-            generateFallbackPuzzle() {
-                // Simple fallback puzzle that's guaranteed to be valid
-                return {
-                    grid: [
-                        [3, 7, 2, 8, 1, 6, 4],
-                        [5, 1, 9, 3, 7, 2, 8],
-                        [2, 8, 4, 6, 3, 1, 7],
-                        [7, 3, 6, 1, 9, 4, 2],
-                        [1, 5, 8, 7, 2, 9, 3],
-                        [9, 2, 1, 4, 8, 3, 6],
-                        [4, 6, 3, 2, 5, 7, 1]
-                    ],
-                    rowTargets: [15, 20, 18, 16, 22, 19, 14],
-                    colTargets: [17, 21, 19, 15, 18, 16, 20],
-                    solutionMask: Array(7).fill().map(() => Array(7).fill(true)),
-                    difficulty: this.difficulty
-                };
-            }
-        }
-
-        function setDifficulty(difficulty) {
-            gameState.difficulty = difficulty;
-            
-            // Update button states
-            document.querySelectorAll('.difficulty-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Generate new puzzle with selected difficulty
-            newPuzzle();
-        }
-
-        function startTimer() {
-            gameState.startTime = Date.now();
-            gameState.gameCompleted = false;
-            
-            gameState.timerInterval = setInterval(() => {
-                if (!gameState.gameCompleted) {
-                    updateTimerDisplay();
-                }
-            }, 1000);
-        }
-
-        function stopTimer() {
-            if (gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-                gameState.timerInterval = null;
-            }
-            gameState.gameCompleted = true;
-        }
-      
-        function updateTimerDisplay() {
-            if (!gameState.startTime) return;
-            
-            const elapsed = Date.now() - gameState.startTime;
-            const seconds = Math.floor(elapsed / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const displaySeconds = seconds % 60;
-            
-            const timerElement = document.getElementById('gameTimer');
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${displaySeconds.toString().padStart(2, '0')}`;
-        }
-      
-        function getElapsedTime() {
-            if (!gameState.startTime) return 0;
-            return Math.floor((Date.now() - gameState.startTime) / 1000);
-        }
-      
-        function initializeGame(puzzle = null) {
-            if (!gameState.startTime) {
-                startTimer();
-            }
-            
-            // Use provided puzzle or generate a new one
-            if (puzzle) {
-                gameState.currentPuzzle = puzzle;
-            } else if (!gameState.currentPuzzle) {
-                console.log("Generating new puzzle...");
-                const generator = new SumpleteGenerator(7, gameState.difficulty);
-                gameState.currentPuzzle = generator.generate();
-            }
-         
-            // Copy puzzle data to game state
-            gameState.grid = gameState.currentPuzzle.grid.map(row => [...row]);
-            gameState.rowTargets = [...gameState.currentPuzzle.rowTargets];
-            gameState.colTargets = [...gameState.currentPuzzle.colTargets];
-            gameState.solutionMask = gameState.currentPuzzle.solutionMask;
-            
-            // Initialize deleted and confirmed states
-            gameState.deleted = Array(7).fill().map(() => Array(7).fill(false));
-            gameState.confirmed = Array(7).fill().map(() => Array(7).fill(false));
-
-            // Update puzzle info
-            updatePuzzleInfo();
-            
-            renderGrid();
-            updateStatus();
-        }
-
-        function updatePuzzleInfo() {
-            const info = document.getElementById('puzzleInfo');
-            const difficultyText = gameState.currentPuzzle?.difficulty || gameState.difficulty;
-            info.textContent = `${difficultyText.charAt(0).toUpperCase() + difficultyText.slice(1)} puzzle`;
-        }
-
-        function renderGrid() {
-            const grid = document.getElementById('gameGrid');
-            const gridWrapper = document.getElementById('gridWrapper');
-            grid.innerHTML = '';
-            
-            // Remove old target and current elements
-            gridWrapper.querySelectorAll('.row-target, .col-target, .row-current, .col-current').forEach(el => el.remove());
-            
-            // Add column targets (top)
-            for (let col = 0; col < 7; col++) {
-                const colTarget = document.createElement('div');
-                colTarget.className = 'col-target';
-                colTarget.style.gridColumn = col + 2;
-                colTarget.style.gridRow = 1;
-                
-                const currentSum = getCurrentColSum(col);
-                const targetSum = gameState.colTargets[col];
-                colTarget.textContent = `${targetSum}`;
-                
-                if (currentSum === targetSum) {
-                    colTarget.classList.add('complete');
-                } else if (currentSum < targetSum) {
-                    colTarget.classList.add('over-target');
-                }
-                
-                gridWrapper.appendChild(colTarget);
-            }
-            
-            // Add column currents (bottom) - showing difference from target
-            if (gameState.showGuides) {
-                for (let col = 0; col < 7; col++) {
-                    const colCurrent = document.createElement('div');
-                    colCurrent.className = 'col-current';
-                    colCurrent.style.gridColumn = col + 2;
-                    colCurrent.style.gridRow = 9;
-                    
-                    const currentSum = getCurrentColSum(col);
-                    const targetSum = gameState.colTargets[col];
-                    const difference = currentSum - targetSum;
-                    
-                    if (difference === 0) {
-                        colCurrent.textContent = `✓`;
-                        colCurrent.classList.add('complete');
-                    } else if (difference > 0) {
-                        colCurrent.textContent = `-${difference}`;
-                    } else {
-                        colCurrent.textContent = `+${Math.abs(difference)}`;
-                    }
-                    
-                    gridWrapper.appendChild(colCurrent);
-                }
-            }
-     
-            
-            // Add row targets (left)
-            for (let row = 0; row < 7; row++) {
-                const rowTarget = document.createElement('div');
-                rowTarget.className = 'row-target';
-                rowTarget.style.gridColumn = 1;
-                rowTarget.style.gridRow = row + 2;
-                
-                const currentSum = getCurrentRowSum(row);
-                const targetSum = gameState.rowTargets[row];
-                rowTarget.textContent = `${targetSum}`;
-                
-                if (currentSum === targetSum) {
-                    rowTarget.classList.add('complete');
-                } else if (currentSum < targetSum) {
-                    rowTarget.classList.add('over-target');
-                }
-                
-                gridWrapper.appendChild(rowTarget);
-            }
-            
-            // Add row currents (right) - showing difference from target
-            if (gameState.showGuides) {
-                for (let row = 0; row < 7; row++) {
-                    const rowCurrent = document.createElement('div');
-                    rowCurrent.className = 'row-current';
-                    rowCurrent.style.gridColumn = 9;
-                    rowCurrent.style.gridRow = row + 2;
-                    
-                    const currentSum = getCurrentRowSum(row);
-                    const targetSum = gameState.rowTargets[row];
-                    const difference = currentSum - targetSum;
-                    
-                    if (difference === 0) {
-                        rowCurrent.textContent = `✓`;
-                        rowCurrent.classList.add('complete');
-                    } else if (difference > 0) {
-                        rowCurrent.textContent = `-${difference}`;
-                    } else {
-                        rowCurrent.textContent = `+${Math.abs(difference)}`;
-                    }
-                    
-                    gridWrapper.appendChild(rowCurrent);
-                }
-            }
-            
-            // Add grid cells
-            for (let row = 0; row < 7; row++) {
-                for (let col = 0; col < 7; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.textContent = gameState.grid[row][col];
-                    cell.onclick = () => toggleCell(row, col);
-                    
-                    // Apply the appropriate state class
-                    if (gameState.deleted[row][col]) {
-                        cell.classList.add('deleted');
-                    } else if (gameState.confirmed[row][col]) {
-                        cell.classList.add('confirmed');
-                    }
-
-                    grid.appendChild(cell);
-                }
-            }
-        }
-
-        function toggleGuides() {
-            gameState.showGuides = document.getElementById('guidesToggle').checked;
-            renderGrid();
-        }
-      
-        function toggleCell(row, col) {
-            // Start timer on first move if not already started
-            if (!gameState.startTime) {
-                startTimer();
-            }
-         
-          
-            // Cycle through three states: normal -> confirmed -> deleted -> normal
-            if (!gameState.confirmed[row][col] && !gameState.deleted[row][col]) {
-                // Normal -> Deleted
-                gameState.deleted[row][col] = true;
-            } else if (gameState.deleted[row][col]) {
-                // Deleted -> Confirmed (keeping the cell)
-                gameState.deleted[row][col] = false;
-                gameState.confirmed[row][col] = true;
-            } else {
-                // Confirmed -> Normal
-                gameState.confirmed[row][col] = false;
-            }
-            
-            renderGrid();
-            updateStatus();
-        }
-
-        function getCurrentRowSum(row) {
-            let sum = 0;
-            for (let col = 0; col < 7; col++) {
-                if (!gameState.deleted[row][col]) {
-                    sum += gameState.grid[row][col];
-                }
-            }
-            return sum;
-        }
-
-        function getCurrentColSum(col) {
-            let sum = 0;
-            for (let row = 0; row < 7; row++) {
-                if (!gameState.deleted[row][col]) {
-                    sum += gameState.grid[row][col];
-                }
-            }
-            return sum;
-        }
-
-        function checkWin() {
-            for (let i = 0; i < 7; i++) {
-                if (getCurrentRowSum(i) !== gameState.rowTargets[i]) return false;
-                if (getCurrentColSum(i) !== gameState.colTargets[i]) return false;
-            }
-            return true;
-        }
-
-        function updateStatus() {
-            const status = document.getElementById('gameStatus');
-            const timer = document.getElementById('gameTimer');
-          
-            if (checkWin()) {
-                const finalTime = getElapsedTime();
-                const minutes = Math.floor(finalTime / 60);
-                const seconds = finalTime % 60;
-              
-                status.textContent = `🎉 Solved in ${minutes}:${seconds.toString().padStart(2, '0')}!`;
-                status.className = 'status win';
-              
-                timer.classList.add('completed');
-                stopTimer();
-              
-                animateWin();
-              
-            } else {
-                status.className = 'status';
-                timer.classList.remove('completed');
-            }
-        }
-      
-        function animateWin() {
-            const cells = document.querySelectorAll('.cell:not(.deleted)');
-            cells.forEach((cell, index) => {
-                setTimeout(() => {
-                    cell.classList.add('win-animation');
-                    setTimeout(() => {
-                        cell.classList.remove('win-animation');
-                    }, 600);
-                }, index * 50);
-            });
-        }
-
-        function resetPuzzle() {
-            stopTimer();
-            gameState.deleted = Array(7).fill().map(() => Array(7).fill(false));
-            gameState.confirmed = Array(7).fill().map(() => Array(7).fill(false));
-            gameState.startTime = null;
-            gameState.gameCompleted = false;
-          
-            document.getElementById('gameTimer').textContent = '00:00';
-            document.getElementById('gameTimer').classList.remove('completed');
-          
-            renderGrid();
-            updateStatus();
-        }
-
-        function newPuzzle() {
-            console.log("Generating new puzzle...");
-            stopTimer();
-            
-            // Generate a new puzzle with current difficulty
-            const generator = new SumpleteGenerator(7, gameState.difficulty);
-            const newPuzzle = generator.generate();
-            
-            // Reset game state
-            gameState.startTime = null;
-            gameState.gameCompleted = false;
-            gameState.currentPuzzle = newPuzzle;
-            
-            document.getElementById('gameTimer').textContent = '00:00';
-            document.getElementById('gameTimer').classList.remove('completed');
-            
-            // Initialize with the new puzzle
-            initializeGame(newPuzzle);
-        }
-
-        // Initialize the game when the page loads
-        console.log("Initializing game...");
-        initializeGame();
-    </script>
-</body>
-</html>
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+
+/* ==================== */
+/* Root Variables/Theme */
+/* ==================== */
+:root {
+    --bg: #FDF9F5;
+    --primary: #0C4F4E;
+    --secondary: #9D442A;
+    --accent: #9EB5A3;
+    --light: #FFF6EB;
+    --text-dark: #353432;
+    --text-light: #FFF6EB;
+    --border: #D7C2B0;
+}
+
+/* ==================== */
+/* Base Styles          */
+/* ==================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: white;
+    padding: 10px;
+}
+
+.game-container {
+    text-align: center;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 100%;
+}
+
+h1 {
+    color: var(--primary);
+    margin-bottom: 20px;
+    font-weight: 100;
+    font-size: 150px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.instructions {
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ==================== */
+/* Grid Layout          */
+/* ==================== */
+.grid-container {
+    display: inline-block;
+    position: relative;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.grid-wrapper {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 50px) 60px;
+    grid-template-rows: 40px repeat(7, 50px) 40px;
+    gap: 0;
+    background-color: white;
+}
+
+.grid {
+    grid-column: 2 / 9;
+    grid-row: 2 / 9;
+    display: grid;
+    grid-template-columns: repeat(7, 50px);
+    grid-template-rows: repeat(7, 50px);
+    gap: 1px;
+    background-color: black;
+    outline: 1px solid black;
+    outline-offset: -1px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ==================== */
+/* Cell States          */
+/* ==================== */
+.cell {
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    color: var(--text-dark);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.cell:hover {
+    background-color: #F5F5F5;
+}
+
+.cell.deleted {
+    background-color: #E9ECEF;
+    color: #495057;
+    border: 1px white;
+}
+
+.cell.confirmed {
+    background-color: #c5decb;
+    border: 1px white;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(127, 166, 136, 0.3);
+}
+
+.cell.confirmed:hover {
+    background-color: #8AA690;
+}
+
+/* ==================== */
+/* Target Cells         */
+/* ==================== */
+.row-target {
+    grid-column: 1;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.row-target.over-target {
+    color: var(--secondary);
+    font-weight: 700;
+}
+
+.col-target {
+    grid-row: 1;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.col-target.over-target {
+    color: var(--secondary);
+    font-weight: 700;
+}
+
+.row-current {
+    grid-column: 9;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-dark);
+}
+
+.col-current {
+    grid-row: 9;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-dark);
+}
+
+.target.complete, 
+.row-target.complete, 
+.col-target.complete {
+    background-color: var(--primary) !important;
+    color: var(--light) !important;
+    border-radius: 6px;
+    box-shadow: 0px 0px 0px 3px white inset;
+}
+
+.row-current.complete, 
+.col-current.complete {
+    background-color: white !important;
+    color: white !important;
+}
+
+/* ==================== */
+/* Controls & Buttons   */
+/* ==================== */
+.controls {
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 300;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary);
+    color: var(--light);
+    cursor: pointer;
+    margin: 0 10px;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.difficulty-container {
+    margin: 15px 0;
+}
+
+.difficulty-buttons {
+    display: inline-flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.difficulty-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 300;
+    border-radius: 8px;
+    background-color: #BC804D;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.difficulty-btn:hover {
+    background-color: var(--secondary);
+}
+
+.difficulty-btn.active {
+    background-color: var(--secondary);
+    color: white;
+}
+
+.difficulty-label {
+    font-size: 24px;
+    color: var(--text-dark);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* ==================== */
+/* Timer & Status       */
+/* ==================== */
+.timer {
+    margin: 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #353432;
+    background-color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.timer.completed {
+    background-color: var(--secondary);
+    color: var(--light);
+    border-color: var(--secondary);
+}
+
+.timer.paused {
+    opacity: 0.6;
+    color: orange;
+}
+
+.status {
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    min-height: 25px;
+    color: var(--text-dark);
+}
+
+.status.win {
+    color: var(--primary);
+    font-size: 24px;
+    animation: winPulse 1s ease-in-out;
+}
+
+.puzzle-info {
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: white;
+    font-style: italic;
+}
+
+/* ==================== */
+/* Toggle Switch        */
+/* ==================== */
+.guides-toggle {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 50px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--primary);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.toggle-label {
+    font-size: 14px;
+    color: var(--text-dark);
+    font-weight: 400;
+}
+
+/* ==================== */
+/* Animations           */
+/* ==================== */
+@keyframes winPulse {
+    0%, 100% { 
+        background-color: var(--success);
+        transform: scale(1);
+    }
+    50% { 
+        background-color: #6BC76F;
+        transform: scale(1.1);
+    }
+}
+
+.cell.win-animation {
+    animation: winPulse 0.6s ease-in-out;
+}
+
+/* ==================== */
+/* Mobile Responsive    */
+/* ==================== */
+@media (max-width: 600px) {
+    body {
+        padding: 5px;
+    }
+    
+    .game-container {
+        padding: 20px 15px;
+        border-radius: 10px;
+    }
+    
+    h1 {
+        font-size: 80px;
+        margin-bottom: 15px;
+        line-height: 1;
+    }
+    
+    .instructions {
+        font-size: 13px;
+        margin-bottom: 15px;
+        padding: 0 5px;
+        line-height: 1.4;
+    }
+    
+    .grid-wrapper {
+        grid-template-columns: 40px repeat(7, 40px) 40px;
+        grid-template-rows: 32px repeat(7, 40px) 32px;
+        margin: 0 auto;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(7, 40px);
+        grid-template-rows: repeat(7, 40px);
+        outline: 2px solid black;
+    }
+    
+    .cell {
+        font-size: 16px;
+    }
+    
+    .row-target, .col-target {
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .row-current, .col-current {
+        font-size: 11px;
+    }
+    
+    button {
+        padding: 12px 16px;
+        font-size: 15px;
+        margin: 5px;
+        border-radius: 8px;
+        background-color: var(--primary);
+    }
+    
+    .difficulty-buttons {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .difficulty-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+        border-radius: 8px;
+        background-color: #BC804D;
+    }
+    
+    .difficulty-label {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .timer {
+        font-size: 17px;
+        padding: 10px 14px;
+        margin: 10px 0;
+    }
+    
+    .status {
+        font-size: 17px;
+        margin-top: 12px;
+    }
+    
+    .status.win {
+        font-size: 22px;
+    }
+    
+    .controls {
+        margin-top: 15px;
+    }
+    
+    .guides-toggle {
+        margin: 12px 0;
+        gap: 12px;
+    }
+    
+    .toggle-label {
+        font-size: 15px;
+    }
+}
+
+/* Extra small mobile screens */
+@media (max-width: 380px) {
+    .game-container {
+        padding: 15px 10px;
+    }
+    
+    h1 {
+        font-size: 70px;
+    }
+    
+    .instructions {
+        font-size: 12px;
+        padding: 0 3px;
+    }
+    
+    .grid-wrapper {
+        grid-template-columns: 35px repeat(7, 35px) 35px;
+        grid-template-rows: 30px repeat(7, 35px) 30px;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(7, 35px);
+        grid-template-rows: repeat(7, 35px);
+    }
+    
+    .cell {
+        font-size: 14px;
+    }
+    
+    .row-target, .col-target {
+        font-size: 12px;
+    }
+    
+    .row-current, .col-current {
+        font-size: 10px;
+    }
+    
+    button {
+        padding: 10px 12px;
+        font-size: 14px;
+        margin: 3px;
+    }
+    
+    .difficulty-buttons {
+        gap: 6px;
+    }
+    
+    .difficulty-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .difficulty-label {
+        font-size: 18px;
+    }
+    
+    .timer {
+        font-size: 16px;
+        padding: 8px 12px;
+    }
+    
+    .status {
+        font-size: 16px;
+    }
+    
+    .status.win {
+        font-size: 20px;
+    }
+}
