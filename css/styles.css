@@ -1,25 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>deduct</title>
-    <style>
-
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
 
 /* ==================== */
 /* Root Variables/Theme */
 /* ==================== */
 :root {
---bg: #FDF9F5;
---primary: #6482fc;
---accent: #fbb45c;
---light: #bfc0f3;
---whiteish: #f3eded;
---text-dark: #1F1D1D;
---text-light: #FFF6EB;
---border: #D7C2B0;
+        --bg: #FDF9F5;
+        --primary: #6482fc;
+        --accent: #fbb45c;
+        --light: #bfc0f3;
+        --whiteish: #f3eded;
+        --text-dark: #1F1D1D;
+        --text-light: #FFF6EB;
+        --border: #D7C2B0;
 }
 
 /* ==================== */
@@ -36,13 +28,13 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f3eded;
+    background-color: white;
     padding: 10px;
 }
 
 .game-container {
     text-align: center;
-    background: #f3eded;
+    background: white;
     padding: 30px;
     border-radius: 15px;
     max-width: 600px;
@@ -79,7 +71,7 @@ h1 {
     grid-template-columns: 60px repeat(7, 50px) 60px;
     grid-template-rows: 40px repeat(7, 50px) 40px;
     gap: 0;
-    background-color: #f3eded;
+    background-color: white;
 }
 
 .grid {
@@ -99,7 +91,7 @@ h1 {
 /* Cell States          */
 /* ==================== */
 .cell {
-    background-color: #f3eded;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -112,27 +104,33 @@ h1 {
     -webkit-tap-highlight-color: transparent;
 }
 
+.cell:hover {
+    background-color: #F5F5F5;
+}
 
 .cell.deleted {
-    background-color: #D3D3D3;
+    background-color: #E9ECEF;
     color: #495057;
-    border: 1px #f3eded;
+    border: 1px white;
 }
 
 .cell.confirmed {
-    background-color: var(--primary);
-    border: 1px #f3eded;
+    background-color: #c5decb;
+    border: 1px white;
     box-sizing: border-box;
     box-shadow: 0 2px 4px rgba(127, 166, 136, 0.3);
 }
 
+.cell.confirmed:hover {
+    background-color: #8AA690;
+}
 
 /* ==================== */
 /* Target Cells         */
 /* ==================== */
 .row-target {
     grid-column: 1;
-    background-color: #f3eded;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -148,7 +146,7 @@ h1 {
 
 .col-target {
     grid-row: 1;
-    background-color: #f3eded;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -164,7 +162,7 @@ h1 {
 
 .row-current {
     grid-column: 9;
-    background-color: #f3eded;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,7 +173,7 @@ h1 {
 
 .col-current {
     grid-row: 9;
-    background-color: #f3eded;
+    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -190,13 +188,13 @@ h1 {
     background-color: var(--primary) !important;
     color: var(--light) !important;
     border-radius: 6px;
-    box-shadow: 0px 0px 0px 3px #f3eded inset;
+    box-shadow: 0px 0px 0px 3px white inset;
 }
 
 .row-current.complete, 
 .col-current.complete {
-    background-color: #f3eded !important;
-    color: #f3eded !important;
+    background-color: white !important;
+    color: white !important;
 }
 
 /* ==================== */
@@ -241,8 +239,8 @@ button:hover {
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 300;
     border-radius: 8px;
-    background-color: #E5E4E2;
-    color: #f3eded;
+    background-color: #BC804D;
+    color: white;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -253,7 +251,7 @@ button:hover {
 
 .difficulty-btn.active {
     background-color: var(--secondary);
-    color: #f3eded;
+    color: white;
 }
 
 .difficulty-label {
@@ -271,7 +269,7 @@ button:hover {
     font-size: 18px;
     font-weight: 600;
     color: #353432;
-    background-color: #f3eded;
+    background-color: white;
     padding: 8px 16px;
     border-radius: 8px;
     display: inline-block;
@@ -306,7 +304,7 @@ button:hover {
 .puzzle-info {
     margin-bottom: 10px;
     font-size: 12px;
-    color: #f3eded;
+    color: white;
     font-style: italic;
 }
 
@@ -352,7 +350,7 @@ button:hover {
     width: 18px;
     left: 3px;
     bottom: 3px;
-    background-color: #f3eded;
+    background-color: white;
     transition: 0.3s;
     border-radius: 50%;
 }
@@ -441,24 +439,12 @@ input:checked + .toggle-slider:before {
     }
     
     button {
-        padding: 10px 10px;
-        font-size: 14px;
-        font-family: 'Source Sans Pro', sans-serif;
-        font-weight: 600;
-        border: 2px; 
-        border-color: #848884;
-        border-radius: 5px;
-        background-color: #f3eded;
-        color: black;
-        cursor: pointer;
-        margin: 0 10px;
-        transition: all 0.2s;
+        padding: 12px 16px;
+        font-size: 15px;
+        margin: 5px;
+        border-radius: 8px;
+        background-color: var(--primary);
     }
-
-    button:hover {
-          color: #6482fc;
-          transform: translateY(-1px);
-      }
     
     .difficulty-buttons {
         gap: 8px;
@@ -467,27 +453,11 @@ input:checked + .toggle-slider:before {
     }
     
     .difficulty-btn {
-      padding: 8px 16px;
-      font-size: 14px;
-      font-family: 'Source Sans Pro', sans-serif;
-      font-weight: 600;
-      border-radius: 5px;
-      background-color: #E5E4E2;
-      color: black;
-      cursor: pointer;
-      transition: all 0.2s;
+        padding: 10px 14px;
+        font-size: 13px;
+        border-radius: 8px;
+        background-color: #BC804D;
     }
-
-    .difficulty-btn:hover {
-        background-color: #848884;
-        color: #f3eded;
-    }
-
-    .difficulty-btn.active {
-        background-color: #848884;
-        color: #f3eded;
-    }
-    
     
     .difficulty-label {
         font-size: 20px;
