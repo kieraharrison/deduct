@@ -10,9 +10,20 @@ export class UIRenderer {
         this.gridWrapper = document.getElementById('gridWrapper');
         this.statusElement = document.getElementById('gameStatus');
         this.puzzleInfoElement = document.getElementById('puzzleInfo');
+        
+        console.log('UIRenderer initialized');
+        console.log('Grid element:', this.gridElement);
+        console.log('Grid wrapper:', this.gridWrapper);
     }
 
     renderGrid() {
+        console.log('Rendering grid...');
+        
+        if (!this.gridElement || !this.gridWrapper) {
+            console.error('Required DOM elements not found');
+            return;
+        }
+        
         this.gridElement.innerHTML = '';
         
         // Remove old target and current elements
@@ -117,6 +128,8 @@ export class UIRenderer {
                 
                 // Apply the appropriate state class
                 const cellState = this.gameState.getCellState(row, col);
+                console.log(`Cell ${row},${col} state: ${cellState}`);
+                
                 if (cellState === 'deleted') {
                     cell.classList.add('deleted');
                 } else if (cellState === 'confirmed') {
@@ -126,6 +139,8 @@ export class UIRenderer {
                 this.gridElement.appendChild(cell);
             }
         }
+        
+        console.log('Grid rendered successfully');
     }
 
     updateStatus(message = '') {
