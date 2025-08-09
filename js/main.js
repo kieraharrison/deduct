@@ -11,12 +11,13 @@ class DeductGame {
         this.gameState = new GameState();
         this.timer = new Timer();
         this.renderer = new UIRenderer(this.gameState, this.timer);
+        this.gameInitialized = false;  // NEW: Track if game has been initialized
         
         this.initializeEventListeners();
         
-        // Generate initial puzzle
-        console.log('Creating initial puzzle...');
-        this.newPuzzle();
+        // NEW: Show welcome modal on first load instead of generating puzzle
+        // Branch: feature/welcome-modal
+        this.showWelcomeModal();
     }
     
     initializeEventListeners() {
@@ -32,19 +33,16 @@ class DeductGame {
         
         // Control buttons
         const resetBtn = document.getElementById('resetBtn');
-        const newPuzzleBtn = document.getElementById('newPuzzleBtn');
         
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 console.log('Reset button clicked');
-                this.resetPuzzle();
-            });
-        }
-        
-        if (newPuzzleBtn) {
-            newPuzzleBtn.addEventListener('click', () => {
-                console.log('New puzzle button clicked');
-                this.newPuzzle();
+                // NEW: Check if game initialized before reset
+                if (this.gameInitialized) {
+                    this.resetPuzzle();
+                } else {
+                    this.showWelcomeModal();
+                }
             });
         }
         
@@ -53,7 +51,9 @@ class DeductGame {
         if (guidesToggle) {
             guidesToggle.addEventListener('change', (e) => {
                 console.log('Guides toggle changed:', e.target.checked);
-                this.toggleGuides(e.target.checked);
+                if (this.gameInitialized) {  // NEW: Only toggle if game initialized
+                    this.toggleGuides(e.target.checked);
+                }
             });
         }
         
@@ -61,6 +61,14 @@ class DeductGame {
         const gameGrid = document.getElementById('gameGrid');
         if (gameGrid) {
             gameGrid.addEventListener('click', (e) => {
+                // NEW: Prevent clicks if game not initialized
+                // Branch: bugfix/initial-click
+                if (!this.gameInitialized) {
+                    console.log('Game not initialized, showing welcome modal');
+                    this.showWelcomeModal();
+                    return;
+                }
+                
                 if (e.target.classList.contains('cell')) {
                     const index = Array.from(e.target.parentNode.children).indexOf(e.target);
                     const row = Math.floor(index / 7);
@@ -72,10 +80,84 @@ class DeductGame {
         } else {
             console.error('gameGrid element not found');
         }
+        
+        // NEW: Welcome modal difficulty buttons
+        // Branch: feature/welcome-modal
+        const easyStart = document.getElementById('easyStart');
+        const mediumStart = document.getElementById('mediumStart');
+        const hardStart = document.getElementById('hardStart');
+        
+        if (easyStart) {
+            easyStart.addEventListener('click', () => this.startGame('easy'));
+        }
+        if (mediumStart) {
+            mediumStart.addEventListener('click', () => this.startGame('medium'));
+        }
+        if (hardStart) {
+            hardStart.addEventListener('click', () => this.startGame('hard'));
+        }
+        
+        // NEW: Win modal buttons
+        // Branch: feature/win-celebration
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const changeDifficultyBtn = document.getElementById('changeDifficultyBtn');
+        
+        if (playAgainBtn) {
+            playAgainBtn.addEventListener('click', () => this.playAgain());
+        }
+        if (changeDifficultyBtn) {
+            changeDifficultyBtn.addEventListener('click', () => this.changeDifficulty());
+        }
+    }
+    
+    // NEW: Show welcome modal
+    // Branch: feature/welcome-modal
+    showWelcomeModal() {
+        const modal = document.getElementById('welcomeModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+    
+    // NEW: Hide welcome modal
+    hideWelcomeModal() {
+        const modal = document.getElementById('welcomeModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+    
+    // NEW: Start game with selected difficulty
+    // Branch: feature/welcome-modal
+    startGame(difficulty) {
+        console.log('Starting game with difficulty:', difficulty);
+        
+        // Close welcome modal
+        this.hideWelcomeModal();
+        
+        // Set difficulty and generate puzzle
+        this.gameState.difficulty = difficulty;
+        this.newPuzzle();
+        this.gameInitialized = true;  // NEW: Mark game as initialized
+        
+        // Update difficulty buttons
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.difficulty === difficulty) {
+                btn.classList.add('active');
+            }
+        });
     }
     
     setDifficulty(difficulty) {
         console.log('Setting difficulty to:', difficulty);
+        
+        // NEW: Check if game initialized
+        if (!this.gameInitialized) {
+            this.startGame(difficulty);
+            return;
+        }
+        
         this.gameState.difficulty = difficulty;
         
         // Update button states
@@ -115,12 +197,74 @@ class DeductGame {
         }
     }
     
+    // UPDATED: Enhanced win handler with modal
+    // Branch: feature/win-celebration
     handleWin() {
         console.log('Handling win');
         this.gameState.gameCompleted = true;
         this.timer.stop();
         this.renderer.showWinStatus();
         this.renderer.animateWin();
+        
+        // NEW: Show win modal after animation starts
+        setTimeout(() => {
+            this.showWinModal();
+            this.createConfetti();  // NEW: Add confetti effect
+        }, 500);
+    }
+    
+    // NEW: Show win modal
+    // Branch: feature/win-celebration
+    showWinModal() {
+        const modal = document.getElementById('winModal');
+        const timeDisplay = document.getElementById('winTime');
+        
+        if (modal && timeDisplay) {
+            timeDisplay.textContent = this.timer.getFormattedTime();
+            modal.classList.add('active');
+        }
+    }
+    
+    // NEW: Hide win modal
+    hideWinModal() {
+        const modal = document.getElementById('winModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+    
+    // NEW: Create confetti effect
+    // Branch: feature/win-celebration
+    createConfetti() {
+        const colors = ['#6482fc', '#fbb45c', '#bfc0f3', '#90EE90', '#FFD700', '#FFA07A'];
+        
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }, i * 30);
+        }
+    }
+    
+    // NEW: Play again with same difficulty
+    // Branch: feature/win-celebration
+    playAgain() {
+        this.hideWinModal();
+        this.newPuzzle();
+    }
+    
+    // NEW: Change difficulty after win
+    // Branch: feature/win-celebration
+    changeDifficulty() {
+        this.hideWinModal();
+        this.showWelcomeModal();
     }
     
     resetPuzzle() {
@@ -164,6 +308,8 @@ class DeductGame {
 }
 
 // Initialize game when DOM is ready
+// UPDATED: Only create game instance, don't generate puzzle yet
+// Branch: bugfix/initial-load
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing game...');
     window.game = new DeductGame();
@@ -171,7 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Also try immediate initialization in case DOMContentLoaded already fired
 if (document.readyState === 'loading') {
-    // Still loading, wait for DOMContentLoaded
     console.log('Document still loading, waiting for DOMContentLoaded...');
 } else {
     // DOM already loaded
