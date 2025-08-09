@@ -146,6 +146,11 @@ class DeductGame {
                 btn.classList.add('active');
             }
         });
+        
+        // FIX: Force an immediate render to ensure the grid is properly displayed
+        this.renderer.renderGrid();
+        
+        console.log('Game started and initialized successfully');
     }
     
     setDifficulty(difficulty) {
@@ -177,14 +182,27 @@ class DeductGame {
     handleCellClick(row, col) {
         console.log(`Handling cell click at ${row}, ${col}`);
         
+        // Add debugging to see if game state is being corrupted
+        console.log('Game state before click:', {
+            gameInitialized: this.gameInitialized,
+            gridValue: this.gameState.getCellValue(row, col),
+            cellState: this.gameState.getCellState(row, col)
+        });
+        
         // Start timer on first move if not already started
         if (!this.timer.isRunning() && !this.gameState.gameCompleted) {
-            console.log('Starting timer');
+            console.log('Starting timer on first move');
             this.timer.start();
         }
         
         // Toggle cell state
         this.gameState.toggleCell(row, col);
+        
+        // Add debugging after toggle
+        console.log('Game state after toggle:', {
+            gridValue: this.gameState.getCellValue(row, col),
+            cellState: this.gameState.getCellState(row, col)
+        });
         
         // Re-render the grid
         console.log('Re-rendering grid after cell click');
@@ -289,9 +307,16 @@ class DeductGame {
         const newPuzzle = generator.generate();
         
         console.log('Generated puzzle:', newPuzzle);
+        console.log('Grid values:', newPuzzle.grid);
         
         // Initialize game with new puzzle
         this.gameState.initializeWithPuzzle(newPuzzle);
+        
+        // Debug: Verify the game state has the correct grid
+        console.log('Game state after initialization:');
+        for (let i = 0; i < 7; i++) {
+            console.log(`Row ${i}:`, this.gameState.grid[i]);
+        }
         
         // Update UI
         this.renderer.updatePuzzleInfo();
