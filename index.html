@@ -11,44 +11,47 @@
         <h1>deduct</h1>
         
         <div class="timer" id="gameTimer">00:00</div>
-        <div class="puzzle-info" id="puzzleInfo">Loading puzzle...</div>
-        
-        <div class="difficulty-container">
-            <div class="difficulty-label">Difficulty:</div>
-            <div class="difficulty-buttons">
-                <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
-                <button class="difficulty-btn" data-difficulty="medium">Medium</button>
-                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
-            </div>
-        </div>
-        
-        <br/>
         
         <div class="grid-container">
-            <div class="grid-wrapper" id="gridWrapper">
-                <div class="grid" id="gameGrid"></div>
+                    <div class="grid-wrapper" id="gridWrapper">
+                        <div class="grid" id="gameGrid"></div>
+                    </div>
+                </div>
+                
+                <div class="targets" style="display: none;">
+                    <div>
+                        <h3>Row Targets</h3>
+                        <div class="row-targets" id="rowTargets"></div>
+                    </div>
+                    <div>
+                        <h3>Column Targets</h3>
+                        <div class="col-targets" id="colTargets"></div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <span class="toggle-label">Start new game:</span>
+                    <button class="difficulty-btn" onclick="setDifficulty('easy')">Easy</button>
+                    <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
+                    <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
+                   <br><br>
+                    <button onclick="resetPuzzle()"> &#x21BB Restart Current Game</button>
+                </div>
+             
+                 
+              <br><br>
+                 <div class="instructions">
+                   <b>How to play:</b> Select boxes to delete the numbers. Click once to delete and twice to take a note the cell must stay on the grid. Make each row and column sum to the target values!
+                   
             </div>
-        </div>
-        
-        <div class="instructions">
-            Select boxes to delete the numbers. Click once to delete and twice to take a note the cell must stay on the grid. Make each row and column sum to the target values!
-        </div>
-        
-        <div class="controls">
-            <button id="resetBtn">Reset</button>
-            <button id="newPuzzleBtn">New Puzzle</button>
-        </div>
-        
-        <div class="guides-toggle">
-            <span class="toggle-label">Show difference guides:</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="guidesToggle" checked>
-                <span class="toggle-slider"></span>
-            </label>
-        </div>
-        
-        <div class="status" id="gameStatus"></div>
-    </div>
+
+              <div class="guides-toggle">
+                  <span class="toggle-label">Keep tally of how much is left to deduct:</span>
+                  <label class="toggle-switch">
+                      <input type="checkbox" id="guidesToggle" checked onchange="toggleGuides()">
+                      <span class="toggle-slider"></span>
+                  </label>
+              </div>
 
     <!-- Load JavaScript modules -->
     <script type="module" src="js/main.js"></script>
