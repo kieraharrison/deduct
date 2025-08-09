@@ -45,8 +45,9 @@ h1 {
     color: var(--primary);
     margin-bottom: 20px;
     font-weight: 100;
-    font-size: 150px;
+    font-size: clamp(60px, 15vw, 150px);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+    line-height: 1;
 }
 
 .instructions {
