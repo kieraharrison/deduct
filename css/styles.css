@@ -4,14 +4,14 @@
 /* Root Variables/Theme */
 /* ==================== */
 :root {
-    --bg: #FDF9F5;
-    --primary: #0C4F4E;
-    --secondary: #9D442A;
-    --accent: #9EB5A3;
-    --light: #FFF6EB;
-    --text-dark: #353432;
-    --text-light: #FFF6EB;
-    --border: #D7C2B0;
+        --bg: #FDF9F5;
+        --primary: #6482fc;
+        --accent: #fbb45c;
+        --light: #bfc0f3;
+        --whiteish: #f3eded;
+        --text-dark: #1F1D1D;
+        --text-light: #FFF6EB;
+        --border: #D7C2B0;
 }
 
 /* ==================== */
