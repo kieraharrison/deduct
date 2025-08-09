@@ -182,6 +182,9 @@ class DeductGame {
         
         // Generate new puzzle with selected difficulty
         this.newPuzzle();
+
+        // Add this line to mark game as initialized
+        this.gameInitialized = true;
     }
     
     handleCellClick(row, col) {
@@ -320,7 +323,10 @@ class DeductGame {
         this.renderer.renderGrid();
         this.renderer.updateStatus();
         this.renderer.updateTimerDisplay();
-        
+
+        // FIX: Add this line to mark game as initialized
+        this.gameInitialized = true;
+
         console.log('New puzzle setup complete');
     }
     
