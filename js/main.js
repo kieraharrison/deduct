@@ -1,5 +1,6 @@
 // main.js - Main game controller that ties everything together
-import { PuzzleGenerator, HintSystem } from './puzzle-generator.js';
+// CHANGE: Remove HintSystem import since it's not defined anywhere
+import { PuzzleGenerator } from './puzzle-generator.js';
 import { GameState } from './game-state.js';
 import { UIRenderer } from './ui-renderer.js';
 import { Timer } from './timer.js';
@@ -12,7 +13,7 @@ class DeductGame {
         this.timer = new Timer();
         this.renderer = new UIRenderer(this.gameState, this.timer);
         this.gameInitialized = false;  // Track if game has been initialized
-        this.hintSystem = null;  // Will be set when puzzle is generated
+        // CHANGE: Remove hintSystem since HintSystem class doesn't exist
         this.hintsUsed = 0;
         
         this.initializeEventListeners();
@@ -48,13 +49,12 @@ class DeductGame {
             });
         }
 
-        // Hint button
+        // Hint button - CHANGE: Disable hint functionality for now since HintSystem is missing
         if (hintBtn) {
             hintBtn.addEventListener('click', () => {
                 console.log('Hint button clicked');
-                if (this.gameInitialized && !this.gameState.gameCompleted) {
-                    this.showHint();
-                }
+                // CHANGE: Show message that hints are not available yet
+                this.showHintUnavailable();
             });
         }
         
@@ -127,7 +127,7 @@ class DeductGame {
         document.addEventListener('keydown', (e) => {
             if (this.gameInitialized && !this.gameState.gameCompleted) {
                 if (e.key === 'h' || e.key === 'H') {
-                    this.showHint();
+                    this.showHintUnavailable();
                 } else if (e.key === 'r' || e.key === 'R') {
                     this.resetPuzzle();
                 }
@@ -252,68 +252,18 @@ class DeductGame {
         }
     }
 
-      showHint() {
-        if (!this.hintSystem) {
-            console.error('Hint system not initialized');
-            return;
-        }
-        
-        // Get current state
-        const currentDeleted = this.gameState.deleted;
-        const currentConfirmed = this.gameState.confirmed;
-        
-        // Get hint from hint system
-        const hint = this.hintSystem.getHint(currentDeleted, currentConfirmed);
-        
-        console.log('Hint generated:', hint);
-        
-        // Display hint
-        this.displayHint(hint);
-        
-        // Track hint usage
-        this.hintsUsed++;
-        
-        // Update hint button text to show count
-        if (hintBtn) {
-            hintBtn.textContent = `💡 Hint (${this.hintsUsed})`;
-        }
-    }
-
-       displayHint(hint) {
-        // Clear previous hint
-        this.clearHintHighlight();
-        
-        // Show hint message
+    // CHANGE: Replace showHint with showHintUnavailable since HintSystem is missing
+    showHintUnavailable() {
         const statusElement = document.getElementById('gameStatus');
         if (statusElement) {
-            statusElement.innerHTML = `<div class="hint-message">${hint.message}</div>`;
+            statusElement.innerHTML = '<div class="hint-message">Hints are not available in this version.</div>';
             statusElement.className = 'status hint';
         }
         
-        // Highlight the suggested cell if applicable
-        if (hint.highlight && hint.cell) {
-            const gridElement = document.getElementById('gameGrid');
-            if (gridElement) {
-                const cellIndex = hint.cell.row * 7 + hint.cell.col;
-                const cells = gridElement.children;
-                if (cells[cellIndex]) {
-                    cells[cellIndex].classList.add('hint-highlight');
-                    
-                    // Add action-specific highlight
-                    if (hint.action === 'delete') {
-                        cells[cellIndex].classList.add('hint-delete');
-                    } else if (hint.action === 'confirm') {
-                        cells[cellIndex].classList.add('hint-confirm');
-                    }
-                }
-            }
-        }
-
-        // Auto-clear hint after 10 seconds
+        // Auto-clear message after 3 seconds
         setTimeout(() => {
-            this.clearHintHighlight();
             this.renderer.updateStatus();
-        }, 10000);
+        }, 3000);
     }
     
     clearHintHighlight() {
