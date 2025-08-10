@@ -481,7 +481,7 @@ input:checked + .toggle-slider:before {
 /* ======================== */
 
 .win-modal .modal {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%);
     color: white;
 }
 
@@ -507,7 +507,7 @@ input:checked + .toggle-slider:before {
 
 .win-modal button {
     margin: 5px;
-    background-color: white;
+    background-color: var(--light);
     color: var(--primary);
     font-weight: 600;
 }
@@ -563,7 +563,7 @@ body.modal-open {
 }
 
 .cell.win-animation {
-    animation: winPulse 0.6s ease-in-out;
+    animation: winPulse 2s ease-in-out;
 }
 
 /* ==================== */
