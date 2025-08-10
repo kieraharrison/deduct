@@ -63,7 +63,7 @@ export class PuzzleGenerator {
             const puzzle = this.attemptGeneration();
             if (puzzle) {
                 console.log(`Successfully generated valid puzzle after ${attempt + 1} attempts`);
-                // Add hint system data
+                // CHANGE: Add hint system data without causing errors
                 puzzle.hintSystem = new HintSystem(puzzle);
                 return puzzle;
             }
@@ -71,6 +71,7 @@ export class PuzzleGenerator {
         
         console.log("Could not generate valid puzzle, using validated fallback");
         const fallback = this.generateFallbackPuzzle();
+        // CHANGE: Add hint system to fallback puzzle
         fallback.hintSystem = new HintSystem(fallback);
         return fallback;
     }
@@ -136,39 +137,23 @@ export class PuzzleGenerator {
     }
 
     createGridWithPattern(template) {
-        const grid = [];
-        
         switch(template) {
             case 'rowComplete':
-                // Create a pattern where some rows will sum exactly to target
                 return this.createRowCompletePattern();
-                
             case 'columnComplete':
-                // Create a pattern where some columns will sum exactly to target
                 return this.createColumnCompletePattern();
-                
             case 'obviousExcess':
-                // Create pattern with clear excess values that must be deleted
                 return this.createObviousExcessPattern();
-                
             case 'intersectionRequired':
-                // Pattern requiring intersection logic
                 return this.createIntersectionPattern();
-                
             case 'cascading':
-                // Pattern where solving one constraint reveals others
                 return this.createCascadingPattern();
-                
             case 'balancedConstraints':
-                // Evenly distributed constraints
                 return this.createBalancedPattern();
-                
             case 'complex':
             case 'multiConstraint':
             case 'deepLogic':
-                // Complex patterns for hard difficulty
                 return this.createComplexPattern();
-                
             default:
                 return this.createBasicGrid();
         }
@@ -178,11 +163,9 @@ export class PuzzleGenerator {
         const grid = [];
         for (let i = 0; i < this.size; i++) {
             const row = [];
-            // Create rows with predictable sums for easy deduction
             const baseValue = Math.floor((this.minValue + this.maxValue) / 2);
             for (let j = 0; j < this.size; j++) {
                 if (i < 2) {
-                    // First two rows have controlled values
                     row.push(baseValue + (j % 2));
                 } else {
                     row.push(this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1)));
@@ -201,7 +184,6 @@ export class PuzzleGenerator {
             const row = [];
             for (let j = 0; j < this.size; j++) {
                 if (j < 2) {
-                    // First two columns have controlled values
                     row.push(baseValue + (i % 2));
                 } else {
                     row.push(this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1)));
@@ -218,7 +200,6 @@ export class PuzzleGenerator {
             const row = [];
             for (let j = 0; j < this.size; j++) {
                 if ((i + j) % 3 === 0) {
-                    // Place high values that will likely need deletion
                     row.push(this.maxValue);
                 } else {
                     row.push(this.minValue + Math.floor(Math.random() * 2));
@@ -234,7 +215,6 @@ export class PuzzleGenerator {
         for (let i = 0; i < this.size; i++) {
             const row = [];
             for (let j = 0; j < this.size; j++) {
-                // Create values that will require considering both row and column constraints
                 const value = this.minValue + ((i * 3 + j * 2) % (this.maxValue - this.minValue + 1));
                 row.push(value);
             }
@@ -250,7 +230,6 @@ export class PuzzleGenerator {
         for (let i = 0; i < this.size; i++) {
             const row = [];
             for (let j = 0; j < this.size; j++) {
-                // Create dependencies radiating from center
                 const distance = Math.abs(i - pivot) + Math.abs(j - pivot);
                 const value = this.minValue + (distance % (this.maxValue - this.minValue + 1));
                 row.push(value);
@@ -265,7 +244,6 @@ export class PuzzleGenerator {
         for (let i = 0; i < this.size; i++) {
             const row = [];
             for (let j = 0; j < this.size; j++) {
-                // Balanced distribution
                 const value = this.minValue + 
                     Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
                 row.push(value);
@@ -281,7 +259,6 @@ export class PuzzleGenerator {
         for (let i = 0; i < this.size; i++) {
             const row = [];
             for (let j = 0; j < this.size; j++) {
-                // Complex pattern with varied distributions
                 let value;
                 if ((i + j) % 4 === 0) {
                     value = this.maxValue;
@@ -311,33 +288,26 @@ export class PuzzleGenerator {
     }
 
     createIntelligentSolutionMask(grid, targetDeletions, template) {
-        // Create solution mask based on pattern template
         const mask = Array(this.size).fill().map(() => Array(this.size).fill(true));
         let deletions = 0;
         
-        // Prioritize deletions based on template type
         const deletionPriority = this.getDeletionPriority(grid, template);
         
         for (const {row, col, priority} of deletionPriority) {
             if (deletions >= targetDeletions) break;
             
-            // Try deleting this cell
             mask[row][col] = false;
             
-            // Check constraints
             const rowCount = mask[row].filter(x => x).length;
             const colCount = mask.map(r => r[col]).filter(x => x).length;
             
             if (rowCount < 2 || colCount < 2) {
-                // Can't delete, restore
                 mask[row][col] = true;
             } else {
-                // Check if this deletion maintains solvability
                 const targets = this.calculateTargets(grid, mask);
                 const quickCheck = this.quickSolvabilityCheck(grid, targets);
                 
                 if (!quickCheck) {
-                    // This deletion makes puzzle unsolvable, restore
                     mask[row][col] = true;
                 } else {
                     deletions++;
@@ -353,13 +323,11 @@ export class PuzzleGenerator {
         
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
-                let priority = Math.random(); // Base random priority
+                let priority = Math.random();
                 
-                // Adjust priority based on template
                 if (template === 'obviousExcess' && grid[i][j] === this.maxValue) {
-                    priority += 2; // Prioritize high values for deletion
+                    priority += 2;
                 } else if (template === 'intersectionRequired') {
-                    // Prioritize cells that affect multiple constraints
                     priority += (grid[i][j] / this.maxValue);
                 }
                 
@@ -367,18 +335,15 @@ export class PuzzleGenerator {
             }
         }
         
-        // Sort by priority (higher = more likely to delete)
         positions.sort((a, b) => b.priority - a.priority);
         return positions;
     }
 
     quickSolvabilityCheck(grid, targets) {
-        // Quick check if puzzle is potentially solvable
         for (let i = 0; i < this.size; i++) {
             const rowSum = grid[i].reduce((a, b) => a + b, 0);
             const colSum = grid.reduce((sum, row) => sum + row[i], 0);
             
-            // If any row/column can't reach its target, puzzle is unsolvable
             if (rowSum < targets.row[i] || colSum < targets.col[i]) {
                 return false;
             }
@@ -414,29 +379,24 @@ export class PuzzleGenerator {
     }
 
     hasUniqueSolution(grid, targets) {
-        // Use backtracking to find all possible solutions
         const solutions = [];
         const mask = Array(this.size).fill().map(() => Array(this.size).fill(true));
         
         this.findAllSolutions(grid, targets, mask, 0, 0, solutions, 2);
         
-        // We want exactly 1 solution
         return solutions.length === 1;
     }
 
     findAllSolutions(grid, targets, mask, row, col, solutions, maxSolutions) {
-        // Stop if we've found enough solutions
         if (solutions.length >= maxSolutions) {
             return;
         }
         
-        // Move to next cell
         if (col >= this.size) {
             col = 0;
             row++;
         }
         
-        // If we've processed all cells, check if this is a valid solution
         if (row >= this.size) {
             if (this.isValidSolution(grid, mask, targets)) {
                 solutions.push(mask.map(r => [...r]));
@@ -444,56 +404,47 @@ export class PuzzleGenerator {
             return;
         }
         
-        // Try keeping the cell
         mask[row][col] = true;
         if (this.canReachTargets(grid, mask, targets, row, col)) {
             this.findAllSolutions(grid, targets, mask, row, col + 1, solutions, maxSolutions);
         }
         
-        // Try deleting the cell (if constraints allow)
         if (this.canDeleteCell(mask, row, col)) {
             mask[row][col] = false;
             if (this.canReachTargets(grid, mask, targets, row, col)) {
                 this.findAllSolutions(grid, targets, mask, row, col + 1, solutions, maxSolutions);
             }
-            mask[row][col] = true; // Restore for backtracking
+            mask[row][col] = true;
         }
     }
 
     canDeleteCell(mask, row, col) {
-        // Temporarily delete to check constraints
         mask[row][col] = false;
         
         const rowCount = mask[row].filter(x => x).length;
         const colCount = mask.map(r => r[col]).filter(x => x).length;
         
-        mask[row][col] = true; // Restore
+        mask[row][col] = true;
         
         return rowCount >= 2 && colCount >= 2;
     }
 
     canReachTargets(grid, mask, targets, currentRow, currentCol) {
-        // Optimization: Check if current partial solution can reach targets
-        
-        // Check rows up to current position
         for (let i = 0; i <= currentRow; i++) {
             let rowSum = 0;
             let rowPotential = 0;
             
             for (let j = 0; j < this.size; j++) {
                 if (i < currentRow || (i === currentRow && j <= currentCol)) {
-                    // Already decided
                     if (mask[i][j]) {
                         rowSum += grid[i][j];
                         rowPotential += grid[i][j];
                     }
                 } else {
-                    // Not yet decided - could be kept
                     rowPotential += grid[i][j];
                 }
             }
             
-            // Check if this row can reach its target
             if (i < currentRow || (i === currentRow && currentCol === this.size - 1)) {
                 if (rowSum !== targets.row[i]) return false;
             } else if (rowPotential < targets.row[i]) {
@@ -501,7 +452,6 @@ export class PuzzleGenerator {
             }
         }
         
-        // Check columns similarly
         for (let j = 0; j < this.size; j++) {
             let colSum = 0;
             let colPotential = 0;
@@ -526,7 +476,6 @@ export class PuzzleGenerator {
     }
 
     isValidSolution(grid, mask, targets) {
-        // Check all row sums
         for (let i = 0; i < this.size; i++) {
             let sum = 0;
             for (let j = 0; j < this.size; j++) {
@@ -537,7 +486,6 @@ export class PuzzleGenerator {
             if (sum !== targets.row[i]) return false;
         }
         
-        // Check all column sums
         for (let j = 0; j < this.size; j++) {
             let sum = 0;
             for (let i = 0; i < this.size; i++) {
@@ -559,7 +507,6 @@ export class PuzzleGenerator {
         const intersectionPercent = (solution.strategyBreakdown.intersection / total) * 100;
         const advancedPercent = (solution.strategyBreakdown.advanced / total) * 100;
         
-        // Check requirements based on difficulty
         if (this.minForcedMovePercent && forcedPercent < this.minForcedMovePercent) {
             return false;
         }
@@ -583,7 +530,6 @@ export class PuzzleGenerator {
     }
 
     generateFallbackPuzzle() {
-        // Enhanced fallback puzzles that have been validated
         const fallbackPuzzles = {
             easy: {
                 grid: [
@@ -663,7 +609,7 @@ export class PuzzleGenerator {
     }
 }
 
-// Logical Solver class for validation
+// CHANGE: Complete LogicalSolver class implementation
 class LogicalSolver {
     constructor(grid, targets) {
         this.grid = grid;
@@ -691,7 +637,6 @@ class LogicalSolver {
             changed = false;
             const previousState = this.getState();
             
-            // Try strategies in order of complexity
             if (this.applyForcedMoves()) {
                 changed = true;
                 this.strategyBreakdown.forced++;
@@ -712,7 +657,6 @@ class LogicalSolver {
             }
         }
         
-        // If not solved and no more moves, would require guessing
         if (!this.isSolved() && !changed) {
             this.requiredGuessing = true;
         }
@@ -758,25 +702,20 @@ class LogicalSolver {
     applyForcedMoves() {
         let changed = false;
         
-        // Check for forced deletions and keeps
         for (let row = 0; row < this.size; row++) {
             const currentSum = this.getRowSum(row);
             const target = this.rowTargets[row];
             const excess = currentSum - target;
             
             if (excess > 0) {
-                // Must delete cells to reach target
                 for (let col = 0; col < this.size; col++) {
                     if (!this.deleted[row][col] && !this.confirmed[row][col]) {
                         if (this.grid[row][col] === excess) {
-                            // This cell exactly equals the excess
                             this.deleted[row][col] = true;
                             changed = true;
                         } else if (this.grid[row][col] > excess) {
-                            // This cell is too large to keep
                             const remainingSum = currentSum - this.grid[row][col];
                             if (remainingSum < target) {
-                                // Can't delete this cell, must be kept
                                 this.confirmed[row][col] = true;
                                 changed = true;
                             }
@@ -784,7 +723,6 @@ class LogicalSolver {
                     }
                 }
             } else if (excess === 0) {
-                // Row is at target, confirm all remaining
                 for (let col = 0; col < this.size; col++) {
                     if (!this.deleted[row][col] && !this.confirmed[row][col]) {
                         this.confirmed[row][col] = true;
@@ -794,7 +732,6 @@ class LogicalSolver {
             }
         }
         
-        // Same logic for columns
         for (let col = 0; col < this.size; col++) {
             const currentSum = this.getColSum(col);
             const target = this.colTargets[col];
@@ -823,3 +760,19 @@ class LogicalSolver {
                     }
                 }
             }
+        }
+        
+        return changed;
+    }
+
+    // CHANGE: Complete the intersection logic method
+    applyIntersectionLogic() {
+        let changed = false;
+        
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
+                if (!this.deleted[row][col] && !this.confirmed[row][col]) {
+                    const value = this.grid[row][col];
+                    
+                    const rowSum = this.getRowSum(row);
+                    const rowTarget = this.rowTargets[row];
