@@ -16,9 +16,6 @@ class DeductGame {
         this.hintsUsed = 0;
         
         this.initializeEventListeners();
-        
-        // Show welcome modal on first load instead of generating puzzle
-        this.showWelcomeModal();
     }
     
     initializeEventListeners() {
@@ -48,6 +45,7 @@ class DeductGame {
         }
 
         // Hint button
+        const hintBtn = document.getElementById('hintBtn');
         if (hintBtn) {
             hintBtn.addEventListener('click', () => {
                 console.log('Hint button clicked');
@@ -273,7 +271,6 @@ class DeductGame {
         this.hintsUsed++;
         
         // Update hint button text to show count
-        const hintBtn = document.getElementById('hintBtn');
         if (hintBtn) {
             hintBtn.textContent = `💡 Hint (${this.hintsUsed})`;
         }
@@ -443,20 +440,13 @@ class DeductGame {
     }
 }
 
-// Initialize game when DOM is ready - FIX: Only initialize once
-// Use a flag to prevent double initialization
+// Initialize game when DOM is ready
 if (!window.gameInitialized) {
     window.gameInitialized = true;
-    
-    if (document.readyState === 'loading') {
-        console.log('Document still loading, waiting for DOMContentLoaded...');
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, initializing game...');
-            window.game = new DeductGame();
-        });
-    } else {
-        // DOM already loaded
-        console.log('DOM already loaded, initializing game immediately...');
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, initializing game...');
         window.game = new DeductGame();
-    }
+        window.game.showWelcomeModal(); // Now guaranteed to exist
+    });
 }
