@@ -1,5 +1,5 @@
 // main.js - Main game controller that ties everything together
-import { PuzzleGenerator } from './puzzle-generator.js';
+import { PuzzleGenerator, HintSystem } from './puzzle-generator.js';
 import { GameState } from './game-state.js';
 import { UIRenderer } from './ui-renderer.js';
 import { Timer } from './timer.js';
@@ -16,6 +16,9 @@ class DeductGame {
         this.hintsUsed = 0;
         
         this.initializeEventListeners();
+
+        // Show welcome modal on first load instead of generating puzzle
+        this.showWelcomeModal();
     }
     
     initializeEventListeners() {
@@ -31,6 +34,7 @@ class DeductGame {
         
         // Control buttons
         const resetBtn = document.getElementById('resetBtn');
+        const hintBtn = document.getElementById('hintBtn');  
         
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
@@ -45,7 +49,6 @@ class DeductGame {
         }
 
         // Hint button
-        const hintBtn = document.getElementById('hintBtn');
         if (hintBtn) {
             hintBtn.addEventListener('click', () => {
                 console.log('Hint button clicked');
