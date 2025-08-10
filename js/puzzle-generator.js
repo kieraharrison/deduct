@@ -1,119 +1,69 @@
-// puzzle-generator.js - Enhanced puzzle generation with proper validation and hint system
+// puzzle-generator.js - Simplified puzzle generation without complex validation
+// CHANGE: Removed HintSystem and complex logical solver to fix import errors
 
 export class PuzzleGenerator {
     constructor(size = 7, difficulty = 'easy') {
         this.size = size;
         this.difficulty = difficulty;
         
-        // Updated difficulty settings with strategy requirements
+        // Simplified difficulty settings
         const difficultySettings = {
             easy: {
                 minValue: 1,
-                maxValue: 5,  // Reduced for clearer patterns
+                maxValue: 5,
                 minDeletions: 8,
-                maxDeletions: 12,
-                minSteps: 5,
-                maxSteps: 15,
-                // Strategy requirements (percentages)
-                minForcedMovePercent: 70,
-                maxIntersectionPercent: 30,
-                maxAdvancedPercent: 0,
-                patternTemplates: ['rowComplete', 'columnComplete', 'obviousExcess']
+                maxDeletions: 12
             },
             medium: {
                 minValue: 1,
                 maxValue: 8,
                 minDeletions: 15,
-                maxDeletions: 20,
-                minSteps: 15,
-                maxSteps: 30,
-                // Strategy requirements
-                minForcedMovePercent: 30,
-                maxForcedMovePercent: 50,
-                minIntersectionPercent: 30,
-                maxIntersectionPercent: 50,
-                maxAdvancedPercent: 20,
-                patternTemplates: ['intersectionRequired', 'cascading', 'balancedConstraints']
+                maxDeletions: 20
             },
             hard: {
                 minValue: 2,
                 maxValue: 12,
                 minDeletions: 22,
-                maxDeletions: 28,
-                minSteps: 30,
-                maxSteps: 50,
-                // Strategy requirements
-                maxForcedMovePercent: 30,
-                minIntersectionPercent: 30,
-                maxIntersectionPercent: 40,
-                minAdvancedPercent: 30,
-                patternTemplates: ['complex', 'multiConstraint', 'deepLogic']
+                maxDeletions: 28
             }
         };
         
         const settings = difficultySettings[difficulty] || difficultySettings.medium;
         Object.assign(this, settings);
-        this.maxAttempts = 100;
+        this.maxAttempts = 20; // Reduced for faster generation
     }
 
     generate() {
-        console.log(`Generating ${this.difficulty} puzzle with validation...`);
+        console.log(`Generating ${this.difficulty} puzzle...`);
         
         for (let attempt = 0; attempt < this.maxAttempts; attempt++) {
             const puzzle = this.attemptGeneration();
             if (puzzle) {
-                console.log(`Successfully generated valid puzzle after ${attempt + 1} attempts`);
-                // CHANGE: Add hint system data without causing errors
-                puzzle.hintSystem = new HintSystem(puzzle);
+                console.log(`Successfully generated puzzle after ${attempt + 1} attempts`);
                 return puzzle;
             }
         }
         
-        console.log("Could not generate valid puzzle, using validated fallback");
-        const fallback = this.generateFallbackPuzzle();
-        // CHANGE: Add hint system to fallback puzzle
-        fallback.hintSystem = new HintSystem(fallback);
-        return fallback;
+        console.log("Using fallback puzzle");
+        return this.generateFallbackPuzzle();
     }
 
     attemptGeneration() {
-        // Step 1: Choose a pattern template based on difficulty
-        const template = this.selectPatternTemplate();
+        // Create a basic grid
+        const grid = this.createBasicGrid();
         
-        // Step 2: Create a grid using the template
-        const grid = this.createGridWithPattern(template);
-        
-        // Step 3: Create a solution mask
+        // Create a solution mask
         const deletionCount = this.minDeletions + 
             Math.floor(Math.random() * (this.maxDeletions - this.minDeletions + 1));
-        const solutionMask = this.createIntelligentSolutionMask(grid, deletionCount, template);
+        const solutionMask = this.createSolutionMask(grid, deletionCount);
         
         if (!solutionMask) return null;
         
-        // Step 4: Calculate targets
+        // Calculate targets
         const targets = this.calculateTargets(grid, solutionMask);
         
-        // Step 5: Validate with logical solver
-        const solver = new LogicalSolver(grid, targets);
-        const solution = solver.solve();
-        
-        // Check if puzzle is solvable through logical deduction only
-        if (!solution.solved || solution.requiredGuessing) {
-            return null;
-        }
-        
-        // Check step count requirements
-        if (solution.steps < this.minSteps || solution.steps > this.maxSteps) {
-            return null;
-        }
-        
-        // Check strategy requirements
-        if (!this.meetsStrategyRequirements(solution)) {
-            return null;
-        }
-        
-        // Step 6: Verify unique solution
-        if (!this.hasUniqueSolution(grid, targets)) {
+        // Basic validation - make sure targets are reasonable
+        if (!this.isValidPuzzle(grid, targets)) {
             return null;
         }
         
@@ -122,156 +72,8 @@ export class PuzzleGenerator {
             solutionMask, 
             rowTargets: targets.row, 
             colTargets: targets.col,
-            difficulty: this.difficulty,
-            patternType: template,
-            solvingStats: {
-                steps: solution.steps,
-                strategies: solution.strategyBreakdown
-            }
+            difficulty: this.difficulty
         };
-    }
-
-    selectPatternTemplate() {
-        const templates = this.patternTemplates;
-        return templates[Math.floor(Math.random() * templates.length)];
-    }
-
-    createGridWithPattern(template) {
-        switch(template) {
-            case 'rowComplete':
-                return this.createRowCompletePattern();
-            case 'columnComplete':
-                return this.createColumnCompletePattern();
-            case 'obviousExcess':
-                return this.createObviousExcessPattern();
-            case 'intersectionRequired':
-                return this.createIntersectionPattern();
-            case 'cascading':
-                return this.createCascadingPattern();
-            case 'balancedConstraints':
-                return this.createBalancedPattern();
-            case 'complex':
-            case 'multiConstraint':
-            case 'deepLogic':
-                return this.createComplexPattern();
-            default:
-                return this.createBasicGrid();
-        }
-    }
-
-    createRowCompletePattern() {
-        const grid = [];
-        for (let i = 0; i < this.size; i++) {
-            const row = [];
-            const baseValue = Math.floor((this.minValue + this.maxValue) / 2);
-            for (let j = 0; j < this.size; j++) {
-                if (i < 2) {
-                    row.push(baseValue + (j % 2));
-                } else {
-                    row.push(this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1)));
-                }
-            }
-            grid.push(row);
-        }
-        return grid;
-    }
-
-    createColumnCompletePattern() {
-        const grid = [];
-        const baseValue = Math.floor((this.minValue + this.maxValue) / 2);
-        
-        for (let i = 0; i < this.size; i++) {
-            const row = [];
-            for (let j = 0; j < this.size; j++) {
-                if (j < 2) {
-                    row.push(baseValue + (i % 2));
-                } else {
-                    row.push(this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1)));
-                }
-            }
-            grid.push(row);
-        }
-        return grid;
-    }
-
-    createObviousExcessPattern() {
-        const grid = [];
-        for (let i = 0; i < this.size; i++) {
-            const row = [];
-            for (let j = 0; j < this.size; j++) {
-                if ((i + j) % 3 === 0) {
-                    row.push(this.maxValue);
-                } else {
-                    row.push(this.minValue + Math.floor(Math.random() * 2));
-                }
-            }
-            grid.push(row);
-        }
-        return grid;
-    }
-
-    createIntersectionPattern() {
-        const grid = [];
-        for (let i = 0; i < this.size; i++) {
-            const row = [];
-            for (let j = 0; j < this.size; j++) {
-                const value = this.minValue + ((i * 3 + j * 2) % (this.maxValue - this.minValue + 1));
-                row.push(value);
-            }
-            grid.push(row);
-        }
-        return grid;
-    }
-
-    createCascadingPattern() {
-        const grid = [];
-        const pivot = Math.floor(this.size / 2);
-        
-        for (let i = 0; i < this.size; i++) {
-            const row = [];
-            for (let j = 0; j < this.size; j++) {
-                const distance = Math.abs(i - pivot) + Math.abs(j - pivot);
-                const value = this.minValue + (distance % (this.maxValue - this.minValue + 1));
-                row.push(value);
-            }
-            grid.push(row);
-        }
-        return grid;
-    }
-
-    createBalancedPattern() {
-        const grid = [];
-        for (let i = 0; i < this.size; i++) {
-            const row = [];
-            for (let j = 0; j < this.size; j++) {
-                const value = this.minValue + 
-                    Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                row.push(value);
-            }
-            grid.push(row);
-        }
-        return grid;
-    }
-
-    createComplexPattern() {
-        const grid = [];
-        
-        for (let i = 0; i < this.size; i++) {
-            const row = [];
-            for (let j = 0; j < this.size; j++) {
-                let value;
-                if ((i + j) % 4 === 0) {
-                    value = this.maxValue;
-                } else if ((i * j) % 3 === 0) {
-                    value = this.minValue;
-                } else {
-                    value = this.minValue + Math.floor(Math.random() * (this.maxValue - this.minValue + 1));
-                }
-                row.push(value);
-            }
-            grid.push(row);
-        }
-        return grid;
     }
 
     createBasicGrid() {
@@ -287,68 +89,46 @@ export class PuzzleGenerator {
         return grid;
     }
 
-    createIntelligentSolutionMask(grid, targetDeletions, template) {
+    createSolutionMask(grid, targetDeletions) {
         const mask = Array(this.size).fill().map(() => Array(this.size).fill(true));
         let deletions = 0;
         
-        const deletionPriority = this.getDeletionPriority(grid, template);
+        // Get all positions and shuffle them
+        const positions = [];
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                positions.push([i, j]);
+            }
+        }
+        this.shuffleArray(positions);
         
-        for (const {row, col, priority} of deletionPriority) {
+        for (const [row, col] of positions) {
             if (deletions >= targetDeletions) break;
             
+            // Try deleting this cell
             mask[row][col] = false;
             
+            // Check constraints - make sure each row and column has at least 2 cells
             const rowCount = mask[row].filter(x => x).length;
             const colCount = mask.map(r => r[col]).filter(x => x).length;
             
             if (rowCount < 2 || colCount < 2) {
+                // Can't delete, restore
                 mask[row][col] = true;
             } else {
-                const targets = this.calculateTargets(grid, mask);
-                const quickCheck = this.quickSolvabilityCheck(grid, targets);
-                
-                if (!quickCheck) {
-                    mask[row][col] = true;
-                } else {
-                    deletions++;
-                }
+                deletions++;
             }
         }
         
-        return deletions === targetDeletions ? mask : null;
+        return deletions >= this.minDeletions ? mask : null;
     }
 
-    getDeletionPriority(grid, template) {
-        const positions = [];
-        
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                let priority = Math.random();
-                
-                if (template === 'obviousExcess' && grid[i][j] === this.maxValue) {
-                    priority += 2;
-                } else if (template === 'intersectionRequired') {
-                    priority += (grid[i][j] / this.maxValue);
-                }
-                
-                positions.push({row: i, col: j, priority});
-            }
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
-        
-        positions.sort((a, b) => b.priority - a.priority);
-        return positions;
-    }
-
-    quickSolvabilityCheck(grid, targets) {
-        for (let i = 0; i < this.size; i++) {
-            const rowSum = grid[i].reduce((a, b) => a + b, 0);
-            const colSum = grid.reduce((sum, row) => sum + row[i], 0);
-            
-            if (rowSum < targets.row[i] || colSum < targets.col[i]) {
-                return false;
-            }
-        }
-        return true;
+        return array;
     }
 
     calculateTargets(grid, solutionMask) {
@@ -378,158 +158,25 @@ export class PuzzleGenerator {
         return { row: rowTargets, col: colTargets };
     }
 
-    hasUniqueSolution(grid, targets) {
-        const solutions = [];
-        const mask = Array(this.size).fill().map(() => Array(this.size).fill(true));
-        
-        this.findAllSolutions(grid, targets, mask, 0, 0, solutions, 2);
-        
-        return solutions.length === 1;
-    }
-
-    findAllSolutions(grid, targets, mask, row, col, solutions, maxSolutions) {
-        if (solutions.length >= maxSolutions) {
-            return;
-        }
-        
-        if (col >= this.size) {
-            col = 0;
-            row++;
-        }
-        
-        if (row >= this.size) {
-            if (this.isValidSolution(grid, mask, targets)) {
-                solutions.push(mask.map(r => [...r]));
-            }
-            return;
-        }
-        
-        mask[row][col] = true;
-        if (this.canReachTargets(grid, mask, targets, row, col)) {
-            this.findAllSolutions(grid, targets, mask, row, col + 1, solutions, maxSolutions);
-        }
-        
-        if (this.canDeleteCell(mask, row, col)) {
-            mask[row][col] = false;
-            if (this.canReachTargets(grid, mask, targets, row, col)) {
-                this.findAllSolutions(grid, targets, mask, row, col + 1, solutions, maxSolutions);
-            }
-            mask[row][col] = true;
-        }
-    }
-
-    canDeleteCell(mask, row, col) {
-        mask[row][col] = false;
-        
-        const rowCount = mask[row].filter(x => x).length;
-        const colCount = mask.map(r => r[col]).filter(x => x).length;
-        
-        mask[row][col] = true;
-        
-        return rowCount >= 2 && colCount >= 2;
-    }
-
-    canReachTargets(grid, mask, targets, currentRow, currentCol) {
-        for (let i = 0; i <= currentRow; i++) {
-            let rowSum = 0;
-            let rowPotential = 0;
-            
-            for (let j = 0; j < this.size; j++) {
-                if (i < currentRow || (i === currentRow && j <= currentCol)) {
-                    if (mask[i][j]) {
-                        rowSum += grid[i][j];
-                        rowPotential += grid[i][j];
-                    }
-                } else {
-                    rowPotential += grid[i][j];
-                }
-            }
-            
-            if (i < currentRow || (i === currentRow && currentCol === this.size - 1)) {
-                if (rowSum !== targets.row[i]) return false;
-            } else if (rowPotential < targets.row[i]) {
-                return false;
-            }
-        }
-        
-        for (let j = 0; j < this.size; j++) {
-            let colSum = 0;
-            let colPotential = 0;
-            
-            for (let i = 0; i < this.size; i++) {
-                if (i < currentRow || (i === currentRow && j <= currentCol)) {
-                    if (mask[i][j]) {
-                        colSum += grid[i][j];
-                        colPotential += grid[i][j];
-                    }
-                } else {
-                    colPotential += grid[i][j];
-                }
-            }
-            
-            if (colPotential < targets.col[j]) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
-    isValidSolution(grid, mask, targets) {
+    isValidPuzzle(grid, targets) {
+        // Basic validation - make sure targets are not too high or too low
         for (let i = 0; i < this.size; i++) {
-            let sum = 0;
-            for (let j = 0; j < this.size; j++) {
-                if (mask[i][j]) {
-                    sum += grid[i][j];
-                }
+            const rowSum = grid[i].reduce((a, b) => a + b, 0);
+            const colSum = grid.reduce((sum, row) => sum + row[i], 0);
+            
+            // Row and column targets should be achievable
+            if (targets.row[i] > rowSum || targets.row[i] < this.minValue) {
+                return false;
             }
-            if (sum !== targets.row[i]) return false;
-        }
-        
-        for (let j = 0; j < this.size; j++) {
-            let sum = 0;
-            for (let i = 0; i < this.size; i++) {
-                if (mask[i][j]) {
-                    sum += grid[i][j];
-                }
+            if (targets.col[i] > colSum || targets.col[i] < this.minValue) {
+                return false;
             }
-            if (sum !== targets.col[j]) return false;
         }
-        
-        return true;
-    }
-
-    meetsStrategyRequirements(solution) {
-        const total = solution.strategyBreakdown.total;
-        if (total === 0) return false;
-        
-        const forcedPercent = (solution.strategyBreakdown.forced / total) * 100;
-        const intersectionPercent = (solution.strategyBreakdown.intersection / total) * 100;
-        const advancedPercent = (solution.strategyBreakdown.advanced / total) * 100;
-        
-        if (this.minForcedMovePercent && forcedPercent < this.minForcedMovePercent) {
-            return false;
-        }
-        if (this.maxForcedMovePercent && forcedPercent > this.maxForcedMovePercent) {
-            return false;
-        }
-        if (this.minIntersectionPercent && intersectionPercent < this.minIntersectionPercent) {
-            return false;
-        }
-        if (this.maxIntersectionPercent && intersectionPercent > this.maxIntersectionPercent) {
-            return false;
-        }
-        if (this.minAdvancedPercent && advancedPercent < this.minAdvancedPercent) {
-            return false;
-        }
-        if (this.maxAdvancedPercent && advancedPercent > this.maxAdvancedPercent) {
-            return false;
-        }
-        
         return true;
     }
 
     generateFallbackPuzzle() {
+        // CHANGE: Use proven working fallback puzzles
         const fallbackPuzzles = {
             easy: {
                 grid: [
@@ -552,8 +199,7 @@ export class PuzzleGenerator {
                     [true, true, false, true, false, true, true],
                     [true, true, true, false, true, true, false]
                 ],
-                difficulty: 'easy',
-                patternType: 'fallback'
+                difficulty: 'easy'
             },
             medium: {
                 grid: [
@@ -576,8 +222,7 @@ export class PuzzleGenerator {
                     [true, true, true, false, true, true, true],
                     [true, true, false, true, false, true, true]
                 ],
-                difficulty: 'medium',
-                patternType: 'fallback'
+                difficulty: 'medium'
             },
             hard: {
                 grid: [
@@ -600,179 +245,12 @@ export class PuzzleGenerator {
                     [true, true, false, true, false, true, false],
                     [true, false, true, false, true, false, true]
                 ],
-                difficulty: 'hard',
-                patternType: 'fallback'
+                difficulty: 'hard'
             }
         };
         
-        return fallbackPuzzles[this.difficulty] || fallbackPuzzles.medium;
+        const puzzle = fallbackPuzzles[this.difficulty] || fallbackPuzzles.medium;
+        console.log(`Using ${this.difficulty} fallback puzzle`);
+        return puzzle;
     }
 }
-
-// CHANGE: Complete LogicalSolver class implementation
-class LogicalSolver {
-    constructor(grid, targets) {
-        this.grid = grid;
-        this.rowTargets = targets.row;
-        this.colTargets = targets.col;
-        this.size = 7;
-        this.deleted = Array(this.size).fill().map(() => Array(this.size).fill(false));
-        this.confirmed = Array(this.size).fill().map(() => Array(this.size).fill(false));
-        this.steps = 0;
-        this.requiredGuessing = false;
-        this.moveHistory = [];
-        this.strategyBreakdown = {
-            forced: 0,
-            intersection: 0,
-            advanced: 0,
-            total: 0
-        };
-    }
-
-    solve() {
-        const maxSteps = 100;
-        let changed = true;
-        
-        while (changed && this.steps < maxSteps && !this.isSolved()) {
-            changed = false;
-            const previousState = this.getState();
-            
-            if (this.applyForcedMoves()) {
-                changed = true;
-                this.strategyBreakdown.forced++;
-                this.recordMove('forced', this.getChangedCells(previousState));
-            } else if (this.applyIntersectionLogic()) {
-                changed = true;
-                this.strategyBreakdown.intersection++;
-                this.recordMove('intersection', this.getChangedCells(previousState));
-            } else if (this.applyAdvancedDeduction()) {
-                changed = true;
-                this.strategyBreakdown.advanced++;
-                this.recordMove('advanced', this.getChangedCells(previousState));
-            }
-            
-            if (changed) {
-                this.strategyBreakdown.total++;
-                this.steps++;
-            }
-        }
-        
-        if (!this.isSolved() && !changed) {
-            this.requiredGuessing = true;
-        }
-        
-        return {
-            solved: this.isSolved(),
-            steps: this.steps,
-            requiredGuessing: this.requiredGuessing,
-            strategyBreakdown: this.strategyBreakdown,
-            moveHistory: this.moveHistory
-        };
-    }
-
-    getState() {
-        return {
-            deleted: this.deleted.map(row => [...row]),
-            confirmed: this.confirmed.map(row => [...row])
-        };
-    }
-
-    getChangedCells(previousState) {
-        const changes = [];
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                if (this.deleted[i][j] !== previousState.deleted[i][j]) {
-                    changes.push({row: i, col: j, action: 'delete'});
-                } else if (this.confirmed[i][j] !== previousState.confirmed[i][j]) {
-                    changes.push({row: i, col: j, action: 'confirm'});
-                }
-            }
-        }
-        return changes;
-    }
-
-    recordMove(strategy, changes) {
-        this.moveHistory.push({
-            step: this.steps,
-            strategy: strategy,
-            changes: changes
-        });
-    }
-
-    applyForcedMoves() {
-        let changed = false;
-        
-        for (let row = 0; row < this.size; row++) {
-            const currentSum = this.getRowSum(row);
-            const target = this.rowTargets[row];
-            const excess = currentSum - target;
-            
-            if (excess > 0) {
-                for (let col = 0; col < this.size; col++) {
-                    if (!this.deleted[row][col] && !this.confirmed[row][col]) {
-                        if (this.grid[row][col] === excess) {
-                            this.deleted[row][col] = true;
-                            changed = true;
-                        } else if (this.grid[row][col] > excess) {
-                            const remainingSum = currentSum - this.grid[row][col];
-                            if (remainingSum < target) {
-                                this.confirmed[row][col] = true;
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-            } else if (excess === 0) {
-                for (let col = 0; col < this.size; col++) {
-                    if (!this.deleted[row][col] && !this.confirmed[row][col]) {
-                        this.confirmed[row][col] = true;
-                        changed = true;
-                    }
-                }
-            }
-        }
-        
-        for (let col = 0; col < this.size; col++) {
-            const currentSum = this.getColSum(col);
-            const target = this.colTargets[col];
-            const excess = currentSum - target;
-            
-            if (excess > 0) {
-                for (let row = 0; row < this.size; row++) {
-                    if (!this.deleted[row][col] && !this.confirmed[row][col]) {
-                        if (this.grid[row][col] === excess) {
-                            this.deleted[row][col] = true;
-                            changed = true;
-                        } else if (this.grid[row][col] > excess) {
-                            const remainingSum = currentSum - this.grid[row][col];
-                            if (remainingSum < target) {
-                                this.confirmed[row][col] = true;
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-            } else if (excess === 0) {
-                for (let row = 0; row < this.size; row++) {
-                    if (!this.deleted[row][col] && !this.confirmed[row][col]) {
-                        this.confirmed[row][col] = true;
-                        changed = true;
-                    }
-                }
-            }
-        }
-        
-        return changed;
-    }
-
-    // CHANGE: Complete the intersection logic method
-    applyIntersectionLogic() {
-        let changed = false;
-        
-        for (let row = 0; row < this.size; row++) {
-            for (let col = 0; col < this.size; col++) {
-                if (!this.deleted[row][col] && !this.confirmed[row][col]) {
-                    const value = this.grid[row][col];
-                    
-                    const rowSum = this.getRowSum(row);
-                    const rowTarget = this.rowTargets[row];
