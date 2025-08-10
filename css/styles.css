@@ -693,6 +693,118 @@ body.modal-open {
     .toggle-label {
         font-size: 15px;
     }
+
+            /* Additional styles for hint system */
+        #hintBtn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #333;
+            font-weight: 600;
+            margin: 10px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        #hintBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+        }
+        
+        #hintBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .hint-message {
+            background: linear-gradient(135deg, #fff3cd, #ffe8a1);
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px auto;
+            max-width: 600px;
+            border: 2px solid #ffc107;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .cell.hint-highlight {
+            animation: pulse 1s infinite;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .cell.hint-delete {
+            box-shadow: 0 0 0 3px #D3D3D3;
+        }
+        
+        .cell.hint-confirm {
+            box-shadow: 0 0 0 3px var(--light);
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+            }
+        }
+        
+        .status.hint {
+            min-height: auto;
+            padding: 0;
+        }
+        
+        #winHints {
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .hints-perfect {
+            color: var(--light);
+        }
+        
+        .hints-used {
+            color: var(--accent);
+        }
+        
+        .keyboard-shortcuts {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .keyboard-shortcuts kbd {
+            background: #f4f4f4;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: monospace;
+            margin: 0 2px;
+        }
     
     /* Modal responsive styles */
         .modal {
