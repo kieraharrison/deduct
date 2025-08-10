@@ -23,6 +23,18 @@ export class UIRenderer {
             console.error('Required DOM elements not found');
             return;
         }
+
+        // Preserve hint highlighting if present
+        const highlightedCells = [];
+        const currentCells = this.gridElement.children;
+        for (let i = 0; i < currentCells.length; i++) {
+            if (currentCells[i].classList.contains('hint-highlight')) {
+                highlightedCells.push({
+                    index: i,
+                    classes: Array.from(currentCells[i].classList)
+                });
+            }
+        }
         
         this.gridElement.innerHTML = '';
         
@@ -139,6 +151,18 @@ export class UIRenderer {
                 this.gridElement.appendChild(cell);
             }
         }
+
+        // Restore hint highlighting
+        highlightedCells.forEach(({index, classes}) => {
+            const cell = this.gridElement.children[index];
+            if (cell) {
+                classes.forEach(cls => {
+                    if (cls.startsWith('hint-')) {
+                        cell.classList.add(cls);
+                    }
+                });
+            }
+        });
         
         console.log('Grid rendered successfully');
     }
@@ -179,7 +203,7 @@ export class UIRenderer {
                 cell.classList.add('win-animation');
                 setTimeout(() => {
                     cell.classList.remove('win-animation');
-                }, 600);
+                }, 800);
             }, index * 50);
         });
     }
