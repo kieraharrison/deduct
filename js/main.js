@@ -12,6 +12,8 @@ class DeductGame {
         this.timer = new Timer();
         this.renderer = new UIRenderer(this.gameState, this.timer);
         this.gameInitialized = false;  // Track if game has been initialized
+        this.hintSystem = null;  // Will be set when puzzle is generated
+        this.hintsUsed = 0;
         
         this.initializeEventListeners();
         
@@ -41,6 +43,16 @@ class DeductGame {
                     this.resetPuzzle();
                 } else {
                     this.showWelcomeModal();
+                }
+            });
+        }
+
+        // Hint button
+        if (hintBtn) {
+            hintBtn.addEventListener('click', () => {
+                console.log('Hint button clicked');
+                if (this.gameInitialized && !this.gameState.gameCompleted) {
+                    this.showHint();
                 }
             });
         }
@@ -109,6 +121,17 @@ class DeductGame {
         if (changeDifficultyBtn) {
             changeDifficultyBtn.addEventListener('click', () => this.changeDifficulty());
         }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (this.gameInitialized && !this.gameState.gameCompleted) {
+                if (e.key === 'h' || e.key === 'H') {
+                    this.showHint();
+                } else if (e.key === 'r' || e.key === 'R') {
+                    this.resetPuzzle();
+                }
+            }
+        });
     }
     
     // Show welcome modal
@@ -196,6 +219,9 @@ class DeductGame {
             gridValue: this.gameState.getCellValue(row, col),
             cellState: this.gameState.getCellState(row, col)
         });
+
+        // Clear any hint highlighting
+        this.clearHintHighlight();
         
         // Start timer on first move if not already started
         if (!this.timer.isRunning() && !this.gameState.gameCompleted) {
@@ -222,6 +248,81 @@ class DeductGame {
             this.handleWin();
         } else {
             this.renderer.updateStatus();
+        }
+    }
+
+      showHint() {
+        if (!this.hintSystem) {
+            console.error('Hint system not initialized');
+            return;
+        }
+        
+        // Get current state
+        const currentDeleted = this.gameState.deleted;
+        const currentConfirmed = this.gameState.confirmed;
+        
+        // Get hint from hint system
+        const hint = this.hintSystem.getHint(currentDeleted, currentConfirmed);
+        
+        console.log('Hint generated:', hint);
+        
+        // Display hint
+        this.displayHint(hint);
+        
+        // Track hint usage
+        this.hintsUsed++;
+        
+        // Update hint button text to show count
+        const hintBtn = document.getElementById('hintBtn');
+        if (hintBtn) {
+            hintBtn.textContent = `💡 Hint (${this.hintsUsed})`;
+        }
+    }
+
+       displayHint(hint) {
+        // Clear previous hint
+        this.clearHintHighlight();
+        
+        // Show hint message
+        const statusElement = document.getElementById('gameStatus');
+        if (statusElement) {
+            statusElement.innerHTML = `<div class="hint-message">${hint.message}</div>`;
+            statusElement.className = 'status hint';
+        }
+        
+        // Highlight the suggested cell if applicable
+        if (hint.highlight && hint.cell) {
+            const gridElement = document.getElementById('gameGrid');
+            if (gridElement) {
+                const cellIndex = hint.cell.row * 7 + hint.cell.col;
+                const cells = gridElement.children;
+                if (cells[cellIndex]) {
+                    cells[cellIndex].classList.add('hint-highlight');
+                    
+                    // Add action-specific highlight
+                    if (hint.action === 'delete') {
+                        cells[cellIndex].classList.add('hint-delete');
+                    } else if (hint.action === 'confirm') {
+                        cells[cellIndex].classList.add('hint-confirm');
+                    }
+                }
+            }
+        }
+
+        // Auto-clear hint after 10 seconds
+        setTimeout(() => {
+            this.clearHintHighlight();
+            this.renderer.updateStatus();
+        }, 10000);
+    }
+    
+    clearHintHighlight() {
+        const gridElement = document.getElementById('gameGrid');
+        if (gridElement) {
+            const cells = gridElement.children;
+            for (let cell of cells) {
+                cell.classList.remove('hint-highlight', 'hint-delete', 'hint-confirm');
+            }
         }
     }
     
