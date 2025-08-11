@@ -104,13 +104,23 @@ class DeductGame {
         // Welcome modal difficulty buttons - need to handle these with delegation
         // since the modal elements might not exist yet
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('difficulty-btn') && e.target.closest('#welcomeModal')) {
+            if (e.target.classList.contains('difficulty-btn')) {
                 const difficulty = e.target.dataset.difficulty;
                 if (difficulty) {
-                    this.startGame(difficulty);
+                    // Check if it's in welcome modal or win modal
+                    if (e.target.closest('#welcomeModal')) {
+                        this.startGame(difficulty);
+                    } else if (e.target.closest('#winModal')) {
+                        this.hideWinModal();
+                        this.startGame(difficulty);
+                    } else {
+                        // Regular difficulty button outside modals
+                        this.setDifficulty(difficulty);
+                    }
                 }
             }
         });
+
         
         // Win modal buttons
         const playAgainBtn = document.getElementById('playAgainBtn');
