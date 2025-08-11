@@ -404,6 +404,11 @@ input:checked + .toggle-slider:before {
     transform: scale(1);
 }
 
+.modal h1 {
+    font-size: clamp(40px, 8vw, 80px) !important;
+    margin-bottom: 15px;
+}
+
 .modal h2 {
     color: var(--primary);
     margin-bottom: 20px;
@@ -430,16 +435,20 @@ input:checked + .toggle-slider:before {
 
 .difficulty-selection {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: nowrap;
 }
 
 .difficulty-selection button {
-    width: 100%;
-    padding: 12px;
-    font-size: 18px;
+    width: auto;
+    padding: 12px 8px;
+    font-size: 16px;
     font-weight: 600;
     transition: all 0.3s ease;
+    flex: 1; 
+    min-width: 0;
 }
 
 .difficulty-selection button.easy {
@@ -822,9 +831,13 @@ body.modal-open {
         font-size: 14px;
     }
     
+    .difficulty-selection {
+        gap: 6px;
+    }
+    
     .difficulty-selection button {
-        padding: 10px;
-        font-size: 16px;
+        padding: 10px 6px;
+        font-size: 14px;
     }
     
     .win-modal h2 {
@@ -926,10 +939,14 @@ body.modal-open {
         font-size: 13px;
         margin-bottom: 20px;
     }
+
+    .difficulty-selection {
+        gap: 4px;
+    }
     
     .difficulty-selection button {
-        padding: 8px;
-        font-size: 14px;
+        padding: 8px 4px;
+        font-size: 13px;
     }
     
     .win-modal h2 {
