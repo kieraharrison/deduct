@@ -1,5 +1,6 @@
 // main.js - Main game controller that ties everything together
-// CHANGE: Remove HintSystem import since it's not defined anywhere
+// FIXED: Removed HintSystem import and implemented basic hint functionality
+
 import { PuzzleGenerator } from './puzzle-generator.js';
 import { GameState } from './game-state.js';
 import { UIRenderer } from './ui-renderer.js';
@@ -12,13 +13,11 @@ class DeductGame {
         this.gameState = new GameState();
         this.timer = new Timer();
         this.renderer = new UIRenderer(this.gameState, this.timer);
-        this.gameInitialized = false;  // Track if game has been initialized
-        // CHANGE: Remove hintSystem since HintSystem class doesn't exist
+        this.gameInitialized = false;
         this.hintsUsed = 0;
+        this.maxHints = 3;
         
         this.initializeEventListeners();
-
-        // Show welcome modal on first load instead of generating puzzle
         this.showWelcomeModal();
     }
     
@@ -40,7 +39,6 @@ class DeductGame {
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 console.log('Reset button clicked');
-                // Check if game initialized before reset
                 if (this.gameInitialized) {
                     this.resetPuzzle();
                 } else {
@@ -49,25 +47,22 @@ class DeductGame {
             });
         }
 
-        // Hint button - CHANGE: Disable hint functionality for now since HintSystem is missing
+        // Hint button - FIXED: Implemented basic hint functionality
         if (hintBtn) {
             hintBtn.addEventListener('click', () => {
                 console.log('Hint button clicked');
-                // CHANGE: Show message that hints are not available yet
-                this.showHintUnavailable();
+                this.showHint();
             });
         }
         
-        // Guides toggle - FIX: Only toggle guides, don't do anything else
+        // Guides toggle
         const guidesToggle = document.getElementById('guidesToggle');
         if (guidesToggle) {
             guidesToggle.addEventListener('change', (e) => {
                 console.log('Guides toggle changed:', e.target.checked);
-                // FIX: Always allow guides toggle if game is initialized, do nothing if not
                 if (this.gameInitialized) {
                     this.toggleGuides(e.target.checked);
                 }
-                // FIX: Remove any implicit else behavior that might cause issues
             });
         }
         
@@ -76,13 +71,11 @@ class DeductGame {
         if (gameGrid) {
             gameGrid.addEventListener('click', (e) => {
                 if (e.target.classList.contains('cell')) {
-                    // FIX: Only check if game is initialized, don't show modal on every click
                     if (!this.gameInitialized) {
                         console.log('Game not initialized, ignoring click');
-                        return; // Simply ignore the click instead of showing modal
+                        return;
                     }
                     
-                    // FIX: Safer way to get cell index
                     const cells = Array.from(gameGrid.children);
                     const index = cells.indexOf(e.target);
                     
@@ -101,43 +94,28 @@ class DeductGame {
             console.error('gameGrid element not found');
         }
         
-        // Welcome modal difficulty buttons - need to handle these with delegation
-        // since the modal elements might not exist yet
+        // Modal event handlers
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('difficulty-btn')) {
                 const difficulty = e.target.dataset.difficulty;
                 if (difficulty) {
-                    // Check if it's in welcome modal or win modal
                     if (e.target.closest('#welcomeModal')) {
                         this.startGame(difficulty);
                     } else if (e.target.closest('#winModal')) {
                         this.hideWinModal();
                         this.startGame(difficulty);
                     } else {
-                        // Regular difficulty button outside modals
                         this.setDifficulty(difficulty);
                     }
                 }
             }
         });
 
-        
-        // Win modal buttons
-        const playAgainBtn = document.getElementById('playAgainBtn');
-        const changeDifficultyBtn = document.getElementById('changeDifficultyBtn');
-        
-        if (playAgainBtn) {
-            playAgainBtn.addEventListener('click', () => this.playAgain());
-        }
-        if (changeDifficultyBtn) {
-            changeDifficultyBtn.addEventListener('click', () => this.changeDifficulty());
-        }
-
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (this.gameInitialized && !this.gameState.gameCompleted) {
                 if (e.key === 'h' || e.key === 'H') {
-                    this.showHintUnavailable();
+                    this.showHint();
                 } else if (e.key === 'r' || e.key === 'R') {
                     this.resetPuzzle();
                 }
@@ -149,20 +127,17 @@ class DeductGame {
     showWelcomeModal() {
         const modal = document.getElementById('welcomeModal');
         if (modal) {
-            // Prevent body scroll when modal is open
             document.body.classList.add('modal-open');
             modal.classList.add('active');
-            
             console.log('Welcome modal shown');
         }
     }
     
-    // Hide welcome modal with scroll restoration
+    // Hide welcome modal
     hideWelcomeModal() {
         const modal = document.getElementById('welcomeModal');
         if (modal) {
             modal.classList.remove('active');
-            // Restore body scroll when modal is closed
             document.body.classList.remove('modal-open');
         }
     }
@@ -171,14 +146,9 @@ class DeductGame {
     startGame(difficulty) {
         console.log('Starting game with difficulty:', difficulty);
         
-        // Close welcome modal
         this.hideWelcomeModal();
-        
-        // Set difficulty and generate puzzle
         this.gameState.difficulty = difficulty;
         this.newPuzzle();
-        
-        // FIX: Set gameInitialized AFTER puzzle is fully generated and rendered
         this.gameInitialized = true;
         
         // Update difficulty buttons
@@ -189,16 +159,13 @@ class DeductGame {
             }
         });
         
-        // FIX: Force an immediate render to ensure the grid is properly displayed
         this.renderer.renderGrid();
-        
         console.log('Game started and initialized successfully');
     }
     
     setDifficulty(difficulty) {
         console.log('Setting difficulty to:', difficulty);
         
-        // Check if game initialized
         if (!this.gameInitialized) {
             this.startGame(difficulty);
             return;
@@ -214,24 +181,19 @@ class DeductGame {
             }
         });
         
-        // Generate new puzzle with selected difficulty
         this.newPuzzle();
-        
-        // FIX: Ensure gameInitialized stays true since we're just changing difficulty
         this.gameInitialized = true;
     }
     
     handleCellClick(row, col) {
         console.log(`Handling cell click at ${row}, ${col}`);
         
-        // Add debugging to see if game state is being corrupted
         console.log('Game state before click:', {
             gameInitialized: this.gameInitialized,
             gridValue: this.gameState.getCellValue(row, col),
             cellState: this.gameState.getCellState(row, col)
         });
 
-        // Clear any hint highlighting
         this.clearHintHighlight();
         
         // Start timer on first move if not already started
@@ -240,16 +202,13 @@ class DeductGame {
             this.timer.start();
         }
         
-        // Toggle cell state
         this.gameState.toggleCell(row, col);
         
-        // Add debugging after toggle
         console.log('Game state after toggle:', {
             gridValue: this.gameState.getCellValue(row, col),
             cellState: this.gameState.getCellState(row, col)
         });
         
-        // Re-render the grid
         console.log('Re-rendering grid after cell click');
         this.renderer.renderGrid();
         
@@ -262,18 +221,158 @@ class DeductGame {
         }
     }
 
-    // CHANGE: Replace showHint with showHintUnavailable since HintSystem is missing
-    showHintUnavailable() {
+    // FIXED: Implemented basic hint system
+    showHint() {
+        if (!this.gameInitialized || this.gameState.gameCompleted) {
+            return;
+        }
+
+        if (this.hintsUsed >= this.maxHints) {
+            this.showHintMessage('No hints remaining!', 'warning');
+            return;
+        }
+
+        // Find a hint move
+        const hint = this.findHintMove();
+        
+        if (hint) {
+            this.hintsUsed++;
+            this.highlightHint(hint);
+            this.showHintMessage(hint.message, 'success');
+        } else {
+            this.showHintMessage('No obvious moves found. Try looking for patterns!', 'info');
+        }
+    }
+
+    findHintMove() {
+        // Check for forced deletions
+        for (let row = 0; row < 7; row++) {
+            const currentSum = this.gameState.getCurrentRowSum(row);
+            const target = this.gameState.rowTargets[row];
+            const excess = currentSum - target;
+            
+            if (excess > 0) {
+                for (let col = 0; col < 7; col++) {
+                    if (this.gameState.getCellState(row, col) === 'normal') {
+                        const value = this.gameState.getCellValue(row, col);
+                        if (value === excess) {
+                            return {
+                                row, col,
+                                action: 'delete',
+                                message: `Row ${row + 1} needs to reduce by exactly ${excess}. This cell has value ${value}.`
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check for forced keeps
+        for (let row = 0; row < 7; row++) {
+            const currentSum = this.gameState.getCurrentRowSum(row);
+            const target = this.gameState.rowTargets[row];
+            
+            if (currentSum === target) {
+                for (let col = 0; col < 7; col++) {
+                    if (this.gameState.getCellState(row, col) === 'normal') {
+                        return {
+                            row, col,
+                            action: 'confirm',
+                            message: `Row ${row + 1} already equals its target. Keep all remaining cells.`
+                        };
+                    }
+                }
+            }
+        }
+
+        // Check columns for similar patterns
+        for (let col = 0; col < 7; col++) {
+            const currentSum = this.gameState.getCurrentColSum(col);
+            const target = this.gameState.colTargets[col];
+            const excess = currentSum - target;
+            
+            if (excess > 0) {
+                for (let row = 0; row < 7; row++) {
+                    if (this.gameState.getCellState(row, col) === 'normal') {
+                        const value = this.gameState.getCellValue(row, col);
+                        if (value === excess) {
+                            return {
+                                row, col,
+                                action: 'delete',
+                                message: `Column ${col + 1} needs to reduce by exactly ${excess}. This cell has value ${value}.`
+                            };
+                        }
+                    }
+                }
+            } else if (currentSum === target) {
+                for (let row = 0; row < 7; row++) {
+                    if (this.gameState.getCellState(row, col) === 'normal') {
+                        return {
+                            row, col,
+                            action: 'confirm',
+                            message: `Column ${col + 1} already equals its target. Keep all remaining cells.`
+                        };
+                    }
+                }
+            }
+        }
+
+        // Check for intersection logic
+        for (let row = 0; row < 7; row++) {
+            for (let col = 0; col < 7; col++) {
+                if (this.gameState.getCellState(row, col) === 'normal') {
+                    const value = this.gameState.getCellValue(row, col);
+                    
+                    const rowSum = this.gameState.getCurrentRowSum(row);
+                    const rowTarget = this.gameState.rowTargets[row];
+                    const rowSumWithout = rowSum - value;
+                    
+                    const colSum = this.gameState.getCurrentColSum(col);
+                    const colTarget = this.gameState.colTargets[col];
+                    const colSumWithout = colSum - value;
+                    
+                    // If both would be under target, must keep
+                    if (rowSumWithout < rowTarget && colSumWithout < colTarget) {
+                        return {
+                            row, col,
+                            action: 'confirm',
+                            message: `Deleting this cell would make both row ${row + 1} and column ${col + 1} impossible to reach their targets.`
+                        };
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    highlightHint(hint) {
+        const gridElement = document.getElementById('gameGrid');
+        if (gridElement) {
+            const cellIndex = hint.row * 7 + hint.col;
+            const cell = gridElement.children[cellIndex];
+            if (cell) {
+                cell.classList.add('hint-highlight');
+                if (hint.action === 'delete') {
+                    cell.classList.add('hint-delete');
+                } else if (hint.action === 'confirm') {
+                    cell.classList.add('hint-confirm');
+                }
+            }
+        }
+    }
+
+    showHintMessage(message, type) {
         const statusElement = document.getElementById('gameStatus');
         if (statusElement) {
-            statusElement.innerHTML = '<div class="hint-message">Hints are not available in this version.</div>';
+            statusElement.innerHTML = `<div class="hint-message">${message} (Hints used: ${this.hintsUsed}/${this.maxHints})</div>`;
             statusElement.className = 'status hint';
         }
         
-        // Auto-clear message after 3 seconds
+        // Auto-clear message after 5 seconds
         setTimeout(() => {
             this.renderer.updateStatus();
-        }, 3000);
+        }, 5000);
     }
     
     clearHintHighlight() {
@@ -286,7 +385,6 @@ class DeductGame {
         }
     }
     
-    // Enhanced win handler with modal
     handleWin() {
         console.log('Handling win');
         this.gameState.gameCompleted = true;
@@ -301,30 +399,37 @@ class DeductGame {
         }, 500);
     }
     
-    // Show win modal
     showWinModal() {
         const modal = document.getElementById('winModal');
         const timeDisplay = document.getElementById('winTime');
+        const hintsDisplay = document.getElementById('winHints');
         
         if (modal && timeDisplay) {
             timeDisplay.textContent = this.timer.getFormattedTime();
-            // Prevent body scroll when modal is open
+            
+            if (hintsDisplay) {
+                if (this.hintsUsed === 0) {
+                    hintsDisplay.textContent = '🏆 Perfect! No hints used!';
+                    hintsDisplay.className = 'hints-perfect';
+                } else {
+                    hintsDisplay.textContent = `Hints used: ${this.hintsUsed}/${this.maxHints}`;
+                    hintsDisplay.className = 'hints-used';
+                }
+            }
+            
             document.body.classList.add('modal-open');
             modal.classList.add('active');
         }
     }
     
-    // Hide win modal with scroll restoration
     hideWinModal() {
         const modal = document.getElementById('winModal');
         if (modal) {
             modal.classList.remove('active');
-            // Restore body scroll when modal is closed
             document.body.classList.remove('modal-open');
         }
     }
     
-    // Create confetti effect
     createConfetti() {
         const colors = ['#6482fc', '#fbb45c', '#bfc0f3', '#90EE90', '#FFD700', '#FFA07A'];
         
@@ -343,17 +448,14 @@ class DeductGame {
         }
     }
     
-    // Play again with same difficulty
     playAgain() {
         this.hideWinModal();
         this.newPuzzle();
     }
     
-    // Change difficulty after win
     changeDifficulty() {
         this.hideWinModal();
         this.showWelcomeModal();
-        // FIX: Don't reset gameInitialized here, let the user choose
     }
     
     resetPuzzle() {
@@ -361,6 +463,7 @@ class DeductGame {
         this.timer.stop();
         this.timer.reset();
         this.gameState.reset();
+        this.hintsUsed = 0; // Reset hints
         this.renderer.renderGrid();
         this.renderer.updateStatus();
         this.renderer.updateTimerDisplay();
@@ -370,6 +473,7 @@ class DeductGame {
         console.log("Generating new puzzle...");
         this.timer.stop();
         this.timer.reset();
+        this.hintsUsed = 0; // Reset hints for new puzzle
         
         // Generate a new puzzle with current difficulty
         const generator = new PuzzleGenerator(7, this.gameState.difficulty);
@@ -377,6 +481,7 @@ class DeductGame {
         
         console.log('Generated puzzle:', newPuzzle);
         console.log('Grid values:', newPuzzle.grid);
+        console.log('Puzzle validated:', newPuzzle.validated);
         
         // Initialize game with new puzzle
         this.gameState.initializeWithPuzzle(newPuzzle);
@@ -410,6 +515,6 @@ if (!window.gameInitialized) {
     document.addEventListener('DOMContentLoaded', () => {
         console.log('DOM loaded, initializing game...');
         window.game = new DeductGame();
-        window.game.showWelcomeModal(); // Now guaranteed to exist
+        window.game.showWelcomeModal();
     });
 }
